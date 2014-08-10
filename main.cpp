@@ -22,6 +22,7 @@ int main() {
                        SYSCTL_OSC_MAIN);
 
     serialPort.initialize(115200);
+    serialPort.putLine("Initializing");
 
     xTaskCreate(uartTask, "UartTX", SERIAL_PORT_STACK,
                    NULL, tskIDLE_PRIORITY + SERIAL_PORT_PRIORITY, NULL);

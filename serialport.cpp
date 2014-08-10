@@ -65,12 +65,33 @@ void SerialPort::initialize(uint32_t baud) {
     MAP_IntEnable(INT_UART0);
 }
 
-void SerialPort::put(uint8_t c) {
-  MAP_UARTCharPutNonBlocking(UART0_BASE, c);
+bool SerialPort::put(uint8_t c, uint32_t timeout_ms) {
+  bool success = true;
+  if (timeout_ms > 0) {
+    success = xQueueSendToBack(txQueue, &c, timeout_ms);
+  } else {
+    BaseType_t requestContextSwitch = false;
+    xQueueSendToBackFromISR(txQueue, &c, &requestContextSwitch);
+  }
+  return success;
 }
 
-uint8_t SerialPort::get() {
-  return MAP_UARTCharGetNonBlocking(UART0_BASE);
+uint8_t SerialPort::get(uint32_t timeout_ms) const {
+  char c;
+  bool result = xQueueReceive(rxQueue, &c, timeout_ms);
+  if (!result)
+    return -1;
+  else return c;
+}
+
+void SerialPort::putLine(const char* str, uint32_t timeout_ms, bool lineEnd) {
+  for (int i = 0; str[i] != '\0'; i++) {
+    serialPort.put(str[i], timeout_ms);
+  }
+  if (lineEnd) {
+    serialPort.put('\r');
+    serialPort.put('\n');
+  }
 }
 
 void SerialPort::isr() {
@@ -78,7 +99,6 @@ void SerialPort::isr() {
   BaseType_t requestContextSwitch2 = false;
   do {
     uint8_t c = MAP_UARTCharGetNonBlocking(UART0_BASE);
-    //put(c);
     xQueueSendToBackFromISR(rxQueue, &c, &requestContextSwitch);
     xQueueSendToBackFromISR(txQueue, &c, &requestContextSwitch2);
   } while (UARTCharsAvail(UART0_BASE));
@@ -89,11 +109,10 @@ void SerialPort::isr() {
 }
 
 void SerialPort::task(void *params) {
-  put('*');
   while (1) {
     char c = -1;
     // Block on getting a character from the queue
-    bool result = xQueueReceive(txQueue, &c, 1);
+    bool result = xQueueReceive(txQueue, &c, portMAX_DELAY);
     // Send out a character, this blocks!
     if (c != -1 && result)
       MAP_UARTCharPut(UART0_BASE, c);

@@ -16,8 +16,10 @@ class SerialPort {
     void initialize(uint32_t baud);
 
     // These get and set from the FreeRTOS queues
-    void put(uint8_t c);
-    uint8_t get();
+    bool put(uint8_t c, uint32_t timeout_ms=0);
+    uint8_t get(uint32_t timeout_ms=0) const;
+
+    void putLine(const char* str, uint32_t timeout_ms = 0, bool lineEnd = true);
 
     // Interrupt service routine for receiving characters on the serial port
     void isr();
@@ -26,9 +28,7 @@ class SerialPort {
     void task(void *params);
 
 
-
   private:
-    // Gets a character, doesn't block
     enum {BufferSize = 64};
     QueueHandle_t rxQueue, txQueue;
 };
