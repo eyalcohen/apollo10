@@ -19,7 +19,7 @@ class SerialPort {
     bool put(uint8_t c, uint32_t timeout_ms=0);
     uint8_t get(uint32_t timeout_ms=0) const;
 
-    void putLine(const char* str, uint32_t timeout_ms = 0, bool lineEnd = true);
+    void putLine(const char* str = "", uint32_t timeout_ms = 0, bool lineEnd = true) const;
 
     // Interrupt service routine for receiving characters on the serial port
     void isr();

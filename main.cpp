@@ -12,8 +12,10 @@
 
 #include "priorities.h"
 #include "serialport.hpp"
+#include "cli.hpp"
 
 SerialPort serialPort;
+CLI cli;
 
 int main() {
 
@@ -26,6 +28,8 @@ int main() {
 
     xTaskCreate(uartTask, "UartTX", SERIAL_PORT_STACK,
                    NULL, tskIDLE_PRIORITY + SERIAL_PORT_PRIORITY, NULL);
+    xTaskCreate(cliTask, "CLI", CLI_PORT_STACK,
+                   NULL, tskIDLE_PRIORITY + CLI_PORT_PRIORITY, NULL);
 
     vTaskStartScheduler();
     while (1) {}

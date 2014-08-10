@@ -81,6 +81,7 @@ ${COMPILER}:
 # Rules for building the FreeRTOS example.
 #
 ${COMPILER}/apollo10.axf: ${COMPILER}/serialport.o
+${COMPILER}/apollo10.axf: ${COMPILER}/cli.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/externals.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/main.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/heap_2.o

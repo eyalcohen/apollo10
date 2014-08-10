@@ -84,7 +84,8 @@ uint8_t SerialPort::get(uint32_t timeout_ms) const {
   else return c;
 }
 
-void SerialPort::putLine(const char* str, uint32_t timeout_ms, bool lineEnd) {
+void SerialPort::putLine(const char* str, uint32_t timeout_ms,
+                         bool lineEnd) const {
   for (int i = 0; str[i] != '\0'; i++) {
     serialPort.put(str[i], timeout_ms);
   }
@@ -96,11 +97,9 @@ void SerialPort::putLine(const char* str, uint32_t timeout_ms, bool lineEnd) {
 
 void SerialPort::isr() {
   BaseType_t requestContextSwitch = false;
-  BaseType_t requestContextSwitch2 = false;
   do {
     uint8_t c = MAP_UARTCharGetNonBlocking(UART0_BASE);
     xQueueSendToBackFromISR(rxQueue, &c, &requestContextSwitch);
-    xQueueSendToBackFromISR(txQueue, &c, &requestContextSwitch2);
   } while (UARTCharsAvail(UART0_BASE));
 
   if (requestContextSwitch) {

@@ -8,4 +8,7 @@
 #define SERIAL_PORT_PRIORITY    1
 #define SERIAL_PORT_STACK    200
 
+#define CLI_PORT_PRIORITY    1
+#define CLI_PORT_STACK    200
+
 #endif // __PRIORITIES_H__
