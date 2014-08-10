@@ -112,7 +112,8 @@ CFLAGS=-mthumb             \
 
 CFLAGS_CC=-std=c99
 
-CFLAGS_CXX=
+CFLAGS_CXX=-fno-exceptions \
+           -fno-rtti
 
 #
 # The command for calling the library archiver.
@@ -197,7 +198,7 @@ ${COMPILER}${SUFFIX}/%.o: %.cpp
 	 then                                                 \
 	     echo "  CXX   ${<}";                             \
 	 else                                                 \
-	     echo ${CXX} ${CFLAGS} ${CLFAGS_CXX} -D${COMPILER} -o ${@} ${<}; \
+	     echo ${CXX} ${CFLAGS} ${CFLAGS_CXX} -D${COMPILER} -o ${@} ${<}; \
 	 fi
 	@${CXX} ${CFLAGS} ${CFLAGS_CXX} -D${COMPILER} -o ${@} ${<}
 ifneq ($(findstring CYGWIN, ${os}), )

@@ -21,6 +21,7 @@
  * This is part of revision 2.1.0.12573 of the EK-TM4C123GXL Firmware Package.
  *
  *****************************************************************************/
+_stack_size = 4K;
 
 MEMORY
 {
@@ -54,17 +55,6 @@ SECTIONS
         *(COMMON)
         _ebss = .;
     } > SRAM
-
-    .data : { *(.data) } > FLASH
-
-  .ARM.exidx : {
-    __exidx_start = .;
-     *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    __exidx_end = .;
-  } > FLASH
-  _etext = .;            /* define a global symbol _etext just after the 
-last code byte */
-
 
 }
 
