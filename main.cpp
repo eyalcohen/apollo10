@@ -4,6 +4,17 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "driverlib/sysctl.h"
+#include "driverlib/rom.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "priorities.h"
+#include "serialport.hpp"
+
+
+/*
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "driverlib/gpio.h"
@@ -18,12 +29,26 @@
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
+*/
 
-void abort(void)
-{
-  for (;;) { }
+SerialPort serialPort;
+
+int main() {
+
+    // Set the clocking to run at 50 MHz from the PLL.
+    ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
+                       SYSCTL_OSC_MAIN);
+
+    serialPort.initialize(115200);
+
+    xTaskCreate(uartTask, "UartTX", SERIAL_PORT_STACK,
+                   NULL, tskIDLE_PRIORITY + SERIAL_PORT_PRIORITY, NULL);
+
+    vTaskStartScheduler();
+    while (1) {}
 }
 
+/*
 #ifdef DEBUG
 void
 __error__(char *pcFilename, uint32_t ui32Line)
@@ -31,7 +56,10 @@ __error__(char *pcFilename, uint32_t ui32Line)
 }
 
 #endif
+*/
 
+
+#if 0
 //*****************************************************************************
 //
 // This hook is called by FreeRTOS when an stack overflow error is detected.
@@ -154,3 +182,5 @@ main(void)
     }
 
 }
+
+#endif

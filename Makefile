@@ -27,6 +27,8 @@
 #
 PART=TM4C123GH6PM
 
+DEBUG=1
+
 #
 # The base directory for TivaWare.
 #
@@ -78,20 +80,15 @@ ${COMPILER}:
 #
 # Rules for building the FreeRTOS example.
 #
-${COMPILER}/apollo10.axf: ${COMPILER}/buttons.o
+${COMPILER}/apollo10.axf: ${COMPILER}/serialport.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/externals.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/main.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/heap_2.o
-${COMPILER}/apollo10.axf: ${COMPILER}/led_task.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/list.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/port.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/queue.o
-${COMPILER}/apollo10.axf: ${COMPILER}/rgb.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/startup_${COMPILER}.o
-${COMPILER}/apollo10.axf: ${COMPILER}/switch_task.o
 ${COMPILER}/apollo10.axf: ${COMPILER}/tasks.o
-${COMPILER}/apollo10.axf: ${COMPILER}/uartstdio.o
-${COMPILER}/apollo10.axf: ${COMPILER}/ustdlib.o
 ${COMPILER}/apollo10.axf: ${ROOT}/libs/driverlib/${COMPILER}/libdriver.a
 ${COMPILER}/apollo10.axf: apollo10.ld
 SCATTERgcc_apollo10=apollo10.ld

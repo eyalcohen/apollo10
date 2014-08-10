@@ -10,3 +10,10 @@ void vApplicationStackOverflowHook(xTaskHandle *pxTask, char *pcTaskName) {
   while (1) {}
 }
 
+void __error__(char *pcFilename, uint32_t ui32Line) {
+/*
+  while (1) {
+
+  }
+*/
+}
