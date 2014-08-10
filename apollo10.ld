@@ -54,4 +54,19 @@ SECTIONS
         *(COMMON)
         _ebss = .;
     } > SRAM
+
+    .data : { *(.data) } > FLASH
+
+  .ARM.exidx : {
+    __exidx_start = .;
+     *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    __exidx_end = .;
+  } > FLASH
+  _etext = .;            /* define a global symbol _etext just after the 
+last code byte */
+
+
 }
+
+
+PROVIDE ( _end = _end_noinit );

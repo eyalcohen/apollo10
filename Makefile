@@ -61,7 +61,7 @@ IPATH+=./libs/FreeRTOS/Source/include
 # The default rule, which causes the FreeRTOS example to be built.
 #
 all: ${COMPILER}
-all: ${COMPILER}/freertos_demo.axf
+all: ${COMPILER}/apollo10.axf
 
 #
 # The rule to clean out all the build products.
@@ -78,23 +78,24 @@ ${COMPILER}:
 #
 # Rules for building the FreeRTOS example.
 #
-${COMPILER}/freertos_demo.axf: ${COMPILER}/buttons.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/freertos_demo.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/heap_2.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/led_task.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/list.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/port.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/queue.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/rgb.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/startup_${COMPILER}.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/switch_task.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/tasks.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/uartstdio.o
-${COMPILER}/freertos_demo.axf: ${COMPILER}/ustdlib.o
-${COMPILER}/freertos_demo.axf: ${ROOT}/libs/driverlib/${COMPILER}/libdriver.a
-${COMPILER}/freertos_demo.axf: freertos_demo.ld
-SCATTERgcc_freertos_demo=freertos_demo.ld
-ENTRY_freertos_demo=ResetISR
+${COMPILER}/apollo10.axf: ${COMPILER}/buttons.o
+${COMPILER}/apollo10.axf: ${COMPILER}/externals.o
+${COMPILER}/apollo10.axf: ${COMPILER}/main.o
+${COMPILER}/apollo10.axf: ${COMPILER}/heap_2.o
+${COMPILER}/apollo10.axf: ${COMPILER}/led_task.o
+${COMPILER}/apollo10.axf: ${COMPILER}/list.o
+${COMPILER}/apollo10.axf: ${COMPILER}/port.o
+${COMPILER}/apollo10.axf: ${COMPILER}/queue.o
+${COMPILER}/apollo10.axf: ${COMPILER}/rgb.o
+${COMPILER}/apollo10.axf: ${COMPILER}/startup_${COMPILER}.o
+${COMPILER}/apollo10.axf: ${COMPILER}/switch_task.o
+${COMPILER}/apollo10.axf: ${COMPILER}/tasks.o
+${COMPILER}/apollo10.axf: ${COMPILER}/uartstdio.o
+${COMPILER}/apollo10.axf: ${COMPILER}/ustdlib.o
+${COMPILER}/apollo10.axf: ${ROOT}/libs/driverlib/${COMPILER}/libdriver.a
+${COMPILER}/apollo10.axf: apollo10.ld
+SCATTERgcc_apollo10=apollo10.ld
+ENTRY_apollo10=ResetISR
 CFLAGSgcc=-DTARGET_IS_TM4C123_RB1
 
 #
