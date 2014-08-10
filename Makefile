@@ -40,21 +40,22 @@ include ${ROOT}/makedefs
 #
 # Where to find source files that do not live in this directory.
 #
-VPATH=./FreeRTOS/Source/portable/GCC/ARM_CM4F
-VPATH+=./FreeRTOS/Source/portable/MemMang/
-VPATH+=./FreeRTOS/Source
-VPATH+=./drivers
-VPATH+=./utils
+VPATH=./libs/FreeRTOS/Source/portable/GCC/ARM_CM4F
+VPATH+=./libs/FreeRTOS/Source/portable/MemMang/
+VPATH+=./libs/FreeRTOS/Source
+VPATH+=./libs/drivers
+VPATH+=./libs/utils
 
 #
 # Where to find header files that do not live in the source directory.
 #
 IPATH=.
 IPATH+=..
+IPATH+=./libs
 IPATH+=/usr/lib/gcc/arm-none-eabi/4.8.2/include
-IPATH+=./FreeRTOS/Source/portable/GCC/ARM_CM4F
-IPATH+=./FreeRTOS
-IPATH+=./FreeRTOS/Source/include
+IPATH+=./libs/FreeRTOS/Source/portable/GCC/ARM_CM4F
+IPATH+=./libs/FreeRTOS
+IPATH+=./libs/FreeRTOS/Source/include
 
 #
 # The default rule, which causes the FreeRTOS example to be built.
@@ -90,7 +91,7 @@ ${COMPILER}/freertos_demo.axf: ${COMPILER}/switch_task.o
 ${COMPILER}/freertos_demo.axf: ${COMPILER}/tasks.o
 ${COMPILER}/freertos_demo.axf: ${COMPILER}/uartstdio.o
 ${COMPILER}/freertos_demo.axf: ${COMPILER}/ustdlib.o
-${COMPILER}/freertos_demo.axf: ${ROOT}/driverlib/${COMPILER}/libdriver.a
+${COMPILER}/freertos_demo.axf: ${ROOT}/libs/driverlib/${COMPILER}/libdriver.a
 ${COMPILER}/freertos_demo.axf: freertos_demo.ld
 SCATTERgcc_freertos_demo=freertos_demo.ld
 ENTRY_freertos_demo=ResetISR
