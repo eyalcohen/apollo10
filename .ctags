@@ -1,0 +1,9 @@
+-R
+--totals
+--exclude=libs/inc/*4c*
+--exclude=libs/FreeRTOS/Source/portable
+--languages=-Make,-Python
+--c++-kinds=+p
+--fields=+iaS
+--extra=+q
+libs/inc/tm4c123gh6pm.h
