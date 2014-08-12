@@ -20,15 +20,6 @@
 #include "driverlib/interrupt.h"
 #include "task.h"
 
-extern SerialPort serialPort;
-
-void uartISR() {
-  serialPort.isr();
-}
-
-void uartTask(void *params) {
-  serialPort.task(params);
-}
 
 SerialPort::SerialPort() {
 
@@ -36,8 +27,8 @@ SerialPort::SerialPort() {
 
 void SerialPort::initialize(uint32_t baud) {
 
-    rxQueue = xQueueCreate(BufferSize, sizeof(uint8_t));
-    txQueue = xQueueCreate(BufferSize, sizeof(uint8_t));
+    rxQueue = xQueueCreate(BufferSize, sizeof(char));
+    txQueue = xQueueCreate(BufferSize, sizeof(char));
 
     // Enable peripherals
     MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
@@ -65,7 +56,7 @@ void SerialPort::initialize(uint32_t baud) {
     MAP_IntEnable(INT_UART0);
 }
 
-bool SerialPort::put(uint8_t c, uint32_t timeout_ms) {
+bool SerialPort::put(char c, uint32_t timeout_ms) const {
   bool success = true;
   if (timeout_ms > 0) {
     success = xQueueSendToBack(txQueue, &c, timeout_ms);
@@ -76,7 +67,7 @@ bool SerialPort::put(uint8_t c, uint32_t timeout_ms) {
   return success;
 }
 
-uint8_t SerialPort::get(uint32_t timeout_ms) const {
+char SerialPort::get(uint32_t timeout_ms) const {
   char c;
   bool result = xQueueReceive(rxQueue, &c, timeout_ms);
   if (!result)
@@ -87,18 +78,17 @@ uint8_t SerialPort::get(uint32_t timeout_ms) const {
 void SerialPort::putLine(const char* str, uint32_t timeout_ms,
                          bool lineEnd) const {
   for (int i = 0; str[i] != '\0'; i++) {
-    serialPort.put(str[i], timeout_ms);
+    put(str[i], timeout_ms);
   }
   if (lineEnd) {
-    serialPort.put('\r');
-    serialPort.put('\n');
+    put('\n');
   }
 }
 
 void SerialPort::isr() {
   BaseType_t requestContextSwitch = false;
   do {
-    uint8_t c = MAP_UARTCharGetNonBlocking(UART0_BASE);
+    char c = MAP_UARTCharGetNonBlocking(UART0_BASE);
     xQueueSendToBackFromISR(rxQueue, &c, &requestContextSwitch);
   } while (UARTCharsAvail(UART0_BASE));
 

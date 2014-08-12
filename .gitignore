@@ -1,2 +1,3 @@
 gcc
 tags
+tests/*.out

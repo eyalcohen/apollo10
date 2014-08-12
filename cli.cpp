@@ -5,13 +5,6 @@
 #include "common.hpp"
 #include "serialport.hpp"
 
-extern CLI cli;
-extern SerialPort serialPort;
-
-void cliTask(void *params) {
-  cli.task(params);
-}
-
 // Command table for CLI
 static CLI::Command commandTable[] = {
   {"version", &CLI::printVersion},
@@ -20,14 +13,14 @@ static CLI::Command commandTable[] = {
 };
 
 // Constructor
-CLI::CLI() : next(0) {
+CLI::CLI(SerialPort* serialPort) : next(0), serialPort(serialPort) {
 }
 
 // FreeRTOS task that reads from queue and executes commands
 void CLI::task(void *params) {
   putPrompt();
   while (1) {
-    char c = serialPort.get((uint32_t)-1);
+    char c = serialPort->get((uint32_t)-1);
     if (next != sizeof(buf)) {
       buf[next++] = c;
     }
@@ -37,7 +30,7 @@ void CLI::task(void *params) {
         execute();
         break;
       default:
-        serialPort.put(c);
+        serialPort->put(c);
         break;
     }
   }
@@ -45,7 +38,7 @@ void CLI::task(void *params) {
 
 // On enter
 void CLI::execute() {
-  serialPort.putLine("");
+  serialPort->putLine("");
   next = 0;
 
   const char* first = strtok(buf,  " ,\n,\r");
@@ -53,25 +46,25 @@ void CLI::execute() {
   for (uint32_t i = 0; i < ARRAY_LENGTH(commandTable); i++) {
     if (strcmp(first, commandTable[i].name) == 0) {
       void (CLI::*ptr)(void) = commandTable[i].fcn;
-      (cli.*ptr)();
+      (*this.*ptr)();
     }
   }
   putPrompt();
 }
 
 void CLI::putPrompt() {
-  serialPort.put('>');
-  serialPort.put(' ');
+  serialPort->put('>');
+  serialPort->put(' ');
 }
 
 void CLI::printHelp() {
-  serialPort.putLine("Commands");
-  serialPort.putLine("help: Help for you");
-  serialPort.putLine("version: Version");
+  serialPort->putLine("Commands");
+  serialPort->putLine("help: Help for you");
+  serialPort->putLine("version: Version");
 }
 
 void CLI::printVersion() {
-  serialPort.putLine("Version ##.##.##");
+  serialPort->putLine("Version ##.##.##");
 }
 
 void CLI::memoryDisplayWords() {

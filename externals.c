@@ -15,3 +15,7 @@ void __error__(char *pcFilename, uint32_t ui32Line) {
   }
 }
 
+void __cxa_pure_virtual() {
+
+}
+

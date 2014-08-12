@@ -47,6 +47,7 @@ static void IntDefaultHandler(void);
 extern void xPortPendSVHandler(void);
 extern void vPortSVCHandler(void);
 extern void xPortSysTickHandler(void);
+extern void __libc_init_array(void);
 
 //*****************************************************************************
 //
@@ -54,6 +55,7 @@ extern void xPortSysTickHandler(void);
 //
 //*****************************************************************************
 extern int main(void);
+void _init() {}
 
 //*****************************************************************************
 //
@@ -242,6 +244,12 @@ extern uint32_t _edata;
 extern uint32_t _bss;
 extern uint32_t _ebss;
 
+extern uint32_t __etext;
+extern uint32_t __bss_start__;
+extern uint32_t __bss_end__;
+extern uint32_t __data_start__;
+extern uint32_t __data_end__;
+
 //*****************************************************************************
 //
 // This is the code that gets called when the processor first starts execution
@@ -260,8 +268,8 @@ ResetISR(void)
     //
     // Copy the data segment initializers from flash to SRAM.
     //
-    pui32Src = &_etext;
-    for(pui32Dest = &_data; pui32Dest < &_edata; )
+    pui32Src = &__etext;
+    for(pui32Dest = &__data_start__; pui32Dest < &__data_end__; )
     {
         *pui32Dest++ = *pui32Src++;
     }
@@ -269,8 +277,8 @@ ResetISR(void)
     //
     // Zero fill the bss segment.
     //
-    __asm("    ldr     r0, =_bss\n"
-          "    ldr     r1, =_ebss\n"
+    __asm("    ldr     r0, =__bss_start__\n"
+          "    ldr     r1, =__bss_end__\n"
           "    mov     r2, #0\n"
           "    .thumb_func\n"
           "zero_loop:\n"
@@ -293,6 +301,7 @@ ResetISR(void)
                          ~(NVIC_CPAC_CP10_M | NVIC_CPAC_CP11_M)) |
                         NVIC_CPAC_CP10_FULL | NVIC_CPAC_CP11_FULL);
 
+    __libc_init_array();
     //
     // Call the application's entry point.
     //

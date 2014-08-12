@@ -3,13 +3,15 @@
 
 #include <stdint.h>
 
+class SerialPort;
+
 extern "C" {
   extern void cliTask(void *params);
 }
 
 class CLI {
   public:
-    CLI();
+    CLI(SerialPort* serialPort);
 
     struct Command {
       const char* name;
@@ -30,6 +32,8 @@ class CLI {
 
     char buf[256];
     uint8_t next;
+
+    SerialPort* serialPort;
 
 };
 

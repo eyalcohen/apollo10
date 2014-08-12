@@ -2,26 +2,28 @@
 #define __SERIALPORT_HPP__
 
 #include <stdint.h>
+
 #include "FreeRTOS.h"
 #include "queue.h"
+
+#include "printer.hpp"
 
 extern "C" {
   extern void uartISR();
   extern void uartTask(void *params);
 }
 
-class SerialPort {
+class SerialPort : public Printer {
   public:
     SerialPort();
     void initialize(uint32_t baud);
 
     // These get and set from the FreeRTOS queues
-    bool put(uint8_t c, uint32_t timeout_ms=0);
-    uint8_t get(uint32_t timeout_ms=0) const;
+    virtual bool put(char c, uint32_t timeout_ms=0) const;
+    char get(uint32_t timeout_ms=0) const;
 
     void putLine(const char* str = "", uint32_t timeout_ms = 0,
                  bool lineEnd = true) const;
-
     // Interrupt service routine for receiving characters on the serial port
     void isr();
 
@@ -30,7 +32,7 @@ class SerialPort {
 
 
   private:
-    enum {BufferSize = 64};
+    enum {BufferSize = 128};
     QueueHandle_t rxQueue, txQueue;
 };
 
