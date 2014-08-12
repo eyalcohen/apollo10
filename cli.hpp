@@ -5,22 +5,19 @@
 
 class SerialPort;
 
-extern "C" {
-  extern void cliTask(void *params);
-}
-
 class CLI {
   public:
     CLI(SerialPort* serialPort);
 
     struct Command {
       const char* name;
-      void (CLI::*fcn)(void);
+      const char* description;
+      bool (CLI::*fcn)(void);
     };
 
-    void printHelp();
-    void printVersion();
-    void memoryDisplayWords();
+    bool printHelp();
+    bool printVersion();
+    bool memoryDisplayWords();
 
     // FreeRTOS task for transmitting characters
     void task(void *params);
@@ -30,10 +27,14 @@ class CLI {
     void execute();
     void putPrompt();
 
-    char buf[256];
+    // Can parse hex or unsigned integer numbers, return true if succesful,
+    // if false will not modify the result
+    bool parseUnsignedInt(const char* input, uint32_t* result);
+
+    char buf[64];
     uint8_t next;
 
-    SerialPort* serialPort;
+    SerialPort* p;
 
 };
 

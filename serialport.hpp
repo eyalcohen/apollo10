@@ -19,10 +19,10 @@ class SerialPort : public Printer {
     void initialize(uint32_t baud);
 
     // These get and set from the FreeRTOS queues
-    virtual bool put(char c, uint32_t timeout_ms=0) const;
+    virtual bool put(char c, uint32_t timeout_ms=20) const;
     char get(uint32_t timeout_ms=0) const;
 
-    void putLine(const char* str = "", uint32_t timeout_ms = 0,
+    void putLine(const char* str = "", uint32_t timeout_ms = 20,
                  bool lineEnd = true) const;
     // Interrupt service routine for receiving characters on the serial port
     void isr();

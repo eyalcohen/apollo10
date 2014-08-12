@@ -21,7 +21,7 @@ class Printer {
     Printer();
 
     // This function is required and puts a character somewhere
-    virtual bool put(char c, uint32_t timeout_ms = 0) const = 0;
+    virtual bool put(char c, uint32_t timeout_ms = 20) const = 0;
 
     // Like C printf
     void printf(const char* fmt, ...);

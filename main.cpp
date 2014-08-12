@@ -81,13 +81,7 @@ int main() {
                  NULL, tskIDLE_PRIORITY + SERIAL_PORT_PRIORITY, NULL);
 
   serialPort.initialize(115200);
-  serialPort.printf("Apollo10 controller");
-  serialPort.printf("%d %i %u", -10, -10, -10);
-  serialPort.printf("%s\n", "test");
-  serialPort.printf("pad test[%#02x] %X\n", 10, &serialPort);
-  serialPort.printf("Test5 %x %x %8x %08x\n", 52384, -52384, 52384, 52384);
-  serialPort.printf("%#x %#X\n", 100000, &serialPort);
-  serialPort.printf("Apollo10 controller");
+  serialPort.printf("\nApollo10 controller\n");
 
   xTaskCreate(cliTask, "CLI", CLI_PORT_STACK,
                  NULL, tskIDLE_PRIORITY + CLI_PORT_PRIORITY, NULL);

@@ -113,6 +113,10 @@ void Printer::printf(const char* fmt, ...) {
           printString(va_arg(args, const char*));
           percent = false;
           break;
+        case 'c':
+          put(va_arg(args, int));
+          percent = false;
+          break;
         case '#':
           hexLeader = true;
           break;
