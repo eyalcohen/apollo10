@@ -1,6 +1,6 @@
 /*
  * printer.cpp - Provides some printing functions like printf
- * Eyal Cohen
+ * Author: Eyal Cohen
  *
  */
 
@@ -14,21 +14,26 @@ void Printer::printDecimal(uint32_t val, bool isSigned) const {
   char out[16] = {'\0'};
   char* buf = out;
   int32_t asSigned = (int32_t)val;
+
+  // Print negative sign
   if (isSigned && asSigned < 0) {
     put('-');
     val = -asSigned;
   }
+
+  // Prepare for output buffer
   do {
     uint32_t digit = val % 10;
     *buf++ = digit + '0';
     val /= 10;
   } while (val && (buf - out) != sizeof(out));
 
+  // Pad if necessary
   for (int add = pad - (buf - out); add > 0; add--) {
     *buf++ = zeros ? '0' : ' ';
   }
 
-  // now reverse
+  // now reverse and print
   for (;buf != out;buf--) {
     put(*buf);
   }
@@ -38,10 +43,14 @@ void Printer::printDecimal(uint32_t val, bool isSigned) const {
 void Printer::printHex(uint32_t val, bool upperCase, bool leader) const {
   char out[16] = {'\0'};
   char* buf = out;
+
+  // Put hex leader 0x or 0X if requested
   if (leader) {
     put('0');
     put(upperCase ? 'X' : 'x');
   }
+
+  // Prepare for output buffer
   do {
     uint32_t hex = val % 16;
     char adder = upperCase ? 'A' : 'a';
@@ -49,11 +58,12 @@ void Printer::printHex(uint32_t val, bool upperCase, bool leader) const {
     val /= 16;
   } while (val && (buf - out) != sizeof(out));
 
+  // Pad if necessary
   for (int add = pad - (buf - out); add > 0; add--) {
     *buf++ = zeros ? '0' : ' ';
   }
     
-  // now reverse
+  // now reverse and print
   for (;buf != out;buf--) {
     put(*buf);
   }
@@ -111,9 +121,5 @@ void Printer::printf(const char* fmt, ...) {
       put(*fmt);
     }
   }
-}
-
-void Printer::test() {
-  put('*');
 }
 

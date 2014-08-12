@@ -1,21 +1,30 @@
+/*
+ * printer.hpp
+ * Author: Eyal Cohen
+ *
+ * Provides some printing functions like printf.  This
+ * class is intended to be subclassed from, and requires that the
+ * derived class implements a put character function
+ *
+ * Supports %d, %i, %u, %s, %x, %X
+ * Suports #, width, padding and zeros.  eg %#08X
+ */
+
 #ifndef __PRINTER_HPP__
 #define __PRINTER_HPP__
 
 #include <stdint.h>
 #include <cstdarg>
 
-extern "C" {
-  extern void uartISR();
-  extern void uartTask(void *params);
-}
-
 class Printer {
   public:
     Printer();
-    // Only required function for a printer is a put function
+
+    // This function is required and puts a character somewhere
     virtual bool put(char c, uint32_t timeout_ms = 0) const = 0;
+
+    // Like C printf
     void printf(const char* fmt, ...);
-    void test();
 
   private:
     void printDecimal(uint32_t val, bool isSigned) const;
@@ -23,10 +32,10 @@ class Printer {
     void printString(const char* str) const;
 
     // Flags and state for printf
-    bool percent;
-    bool hexLeader;
-    int pad;
-    bool zeros;
+    bool percent; // % symbol
+    bool hexLeader; // # symbol, like %#0X
+    int pad; // Pad modifier, like %8X
+    bool zeros; // Add zeros to padding
 
 };
 
