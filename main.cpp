@@ -16,6 +16,7 @@
 #include "priorities.h"
 #include "serialport.hpp"
 #include "cli.hpp"
+#include "parameters.hpp"
 
 //CLI cli;
 
@@ -55,7 +56,8 @@ void ledTask(void *params) {
 
 /* Globals */
 SerialPort serialPort;
-CLI cli(&serialPort);
+Parameters parameters;
+CLI cli(&serialPort, &parameters);
 
 /* Interrupt Service Routines */
 void uartISR() {
@@ -81,10 +83,30 @@ int main() {
                  NULL, tskIDLE_PRIORITY + SERIAL_PORT_PRIORITY, NULL);
 
   serialPort.initialize(115200);
-  serialPort.printf("\nApollo10 controller\n");
+  serialPort.putLine();
+  serialPort.putLine("Apollo10 controller");
 
   xTaskCreate(cliTask, "CLI", CLI_PORT_STACK,
                  NULL, tskIDLE_PRIORITY + CLI_PORT_PRIORITY, NULL);
+
+/*
+  #define ADD_RO(x, desc) parameters.addParameter(#x, desc, &x, Parameters::ReadOnly)
+  #define ADD_RW(x, desc) parameters.addParameter(#x, desc, &x, Parameters::Writable)
+  ADD_RO(serialPort.rxCount, "Serial RX Counter" );
+  ADD_RO(serialPort.txCount, "Serial TX Counter" );
+  */
+    parameters.addParameter("serialport.txCount", "bytes transmitted",
+                 (void*)&serialPort.txCount, Parameters::Uint16,
+                 Parameters::ReadOnly);
+    parameters.addParameter("serialport.rxCount", "bytes transmitted",
+                 (void*)&serialPort.rxCount, Parameters::Uint16,
+                 Parameters::ReadOnly);
+    parameters.addParameter("serialport.txCount", "bytes transmitted",
+                 (void*)&serialPort.txCount, Parameters::Uint16,
+                 Parameters::ReadOnly);
+    parameters.addParameter("serialport.rxCount", "bytes transmitted",
+                 (void*)&serialPort.rxCount, Parameters::Uint16,
+                 Parameters::ReadOnly);
 
   /*
   xTaskCreate(ledTask, "LED", LED_PORT_STACK,

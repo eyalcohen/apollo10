@@ -9,7 +9,7 @@
 #define SERIAL_PORT_STACK   100 
 
 #define CLI_PORT_PRIORITY    1
-#define CLI_PORT_STACK   100 
+#define CLI_PORT_STACK   200 
 
 #define LED_PORT_PRIORITY    1
 #define LED_PORT_STACK    100

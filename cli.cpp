@@ -4,16 +4,21 @@
 
 #include "common.hpp"
 #include "serialport.hpp"
+#include "parameters.hpp"
 
 // Command table for CLI
 static CLI::Command commandTable[] = {
   {"version", "Displays version information", &CLI::printVersion},
   {"help", "This help menu", &CLI::printHelp},
-  {"mdw", "Display data in addresses. Usage mdw [address] [count]", &CLI::memoryDisplayWords},
+  {"mdw", "Display data in addresses. Usage: mdw [address] [count]",
+    &CLI::memoryDisplayWords},
+  {"get", "Gets a parameter.  Usage: get [string]",
+    &CLI::getParameter},
 };
 
 // Constructor
-CLI::CLI(SerialPort* serialPort) : next(0), p(serialPort) {
+CLI::CLI(SerialPort* serialPort, Parameters* parameters)
+  : next(0), p(serialPort), parameters(parameters) {
 }
 
 // FreeRTOS task that reads from queue and executes commands
@@ -70,6 +75,30 @@ bool CLI::memoryDisplayWords() {
     address += 4;
   }
 
+  return true;
+}
+
+bool CLI::getParameter() {
+  const char* nextArg = strtok(NULL, " ,\n,\r");
+  Parameters::ResultsIterator it;
+  if (nextArg) {
+    parameters->get(nextArg, &it);
+  } else {
+    parameters->get("", &it);
+  }
+
+  for (it.reset(); it.complete(); ++it) {
+    Parameters::ParameterGet results = it.val();
+    p->printf("[%02d] %s = ", results.index, results.name, results.description);
+    if (results.type == Parameters::Int8
+        || results.type == Parameters::Int16
+        || results.type == Parameters::Int32 ) {
+      p->printf("%d", (int32_t)results.valueUntyped);
+    } else {
+      p->printf("%u", (uint32_t)results.valueUntyped);
+    }
+    p->printf("\n");
+  }
   return true;
 }
 

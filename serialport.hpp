@@ -30,6 +30,9 @@ class SerialPort : public Printer {
     // FreeRTOS task for transmitting characters
     void task(void *params);
 
+    // serial port counters
+    uint16_t rxCount;
+    uint16_t txCount;
 
   private:
     enum {BufferSize = 128};

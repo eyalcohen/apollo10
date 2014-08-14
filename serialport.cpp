@@ -21,7 +21,7 @@
 #include "task.h"
 
 
-SerialPort::SerialPort() {
+SerialPort::SerialPort() : rxCount(0), txCount(0) {
 
 }
 
@@ -89,6 +89,7 @@ void SerialPort::isr() {
   BaseType_t requestContextSwitch = false;
   do {
     char c = MAP_UARTCharGetNonBlocking(UART0_BASE);
+    rxCount++;
     xQueueSendToBackFromISR(rxQueue, &c, &requestContextSwitch);
   } while (UARTCharsAvail(UART0_BASE));
 
@@ -103,7 +104,9 @@ void SerialPort::task(void *params) {
     // Block on getting a character from the queue
     bool result = xQueueReceive(txQueue, &c, portMAX_DELAY);
     // Send out a character, this blocks!
-    if (c != -1 && result)
+    if (c != -1 && result) {
       MAP_UARTCharPut(UART0_BASE, c);
+      txCount++;
+    }
   }
 }
