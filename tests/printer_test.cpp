@@ -14,5 +14,6 @@ int main() {
   printer.printf("Test4 %u %u %8u %08u\n", 52384, -52384, 52384, 52384);
   printer.printf("Test5 %x %x %8x %08x\n", 52384, -52384, 52384, 52384);
   printer.printf("Test6 %X %#X %8X %08X\n", 52384, -52384, 52384, 52384);
-  printer.printf("Test7 %s\n", "Eyal");
+  printer.printf("Test7 %d %4d %04d %04d\n", -5, -5, -5, -5);
+  printer.printf("Test8 %s\n", "Eyal");
 }

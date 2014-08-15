@@ -15,10 +15,11 @@
 
 class SerialPort;
 class Parameters;
+class RTOS;
 
 class CLI {
   public:
-    CLI(SerialPort* serialPort, Parameters* parameters);
+    CLI(SerialPort* serialPort, Parameters* parameters, const RTOS & rtos);
 
     struct Command {
       const char* name;
@@ -33,6 +34,7 @@ class CLI {
     bool getParameter();
     bool setParameter();
     bool reset();
+    bool resources();
 
     // FreeRTOS task for transmitting characters
     void task(void *params);
@@ -52,6 +54,7 @@ class CLI {
 
     SerialPort* p;
     Parameters* parameters;
+    const RTOS & rtos;
 
 };
 

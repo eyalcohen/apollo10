@@ -55,10 +55,10 @@ void ledTask(void *params) {
 }
 
 /* Globals */
+RTOS rtos;
 SerialPort serialPort;
 Parameters parameters;
-CLI cli(&serialPort, &parameters);
-RTOS rtos;
+CLI cli(&serialPort, &parameters, rtos);
 
 int32_t test = 0;
 

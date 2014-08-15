@@ -2,7 +2,7 @@
  * rtos.hpp
  * Author: Eyal Cohen
  *
- * A wrapper around the RTOS that contains some task handle state information
+ * A C++ wrapper around some freeRTOS functions
  */
 
 
@@ -23,15 +23,38 @@ class RTOS {
       memset(tasks, 0, sizeof(tasks));
     }
 
+    enum { MaxTasks = 4 };
+
+    enum State {
+      Ready = 0,
+      Running = 1,
+      Blocked = 2,
+      Suspended = 3,
+      Deleted = 4
+    };
+
+    struct Tasks {
+      TaskHandle_t handle;
+      uint16_t stack;
+    };
+
+    struct TaskStats {
+      const char* name;
+      State state;
+      int16_t stackUsed;
+      uint16_t stack;
+    };
+
     bool createTask(void (*fcn)(void*), const char* name, uint32_t stack,
                     uint32_t priority) {
-      if (length == maxTasks)
+      if (length == MaxTasks)
         return false;
 
       if (!fcn || !name || stack <= 0)
         return false;
 
-      xTaskCreate(fcn, name, stack, NULL, priority, tasks[length]);
+      xTaskCreate(fcn, name, stack, NULL, priority, &tasks[length].handle);
+      tasks[length].stack = stack;
       length++;
       return true;
     }
@@ -40,10 +63,20 @@ class RTOS {
       vTaskDelay(ms * configTICK_RATE_HZ / 1000);
     }
 
-  private:
+    void getTaskStats(TaskStats* stats, uint8_t len) const {
+      for (uint32_t i = 0; i < len; i++) {
+        stats[i].name = pcTaskGetTaskName(tasks[i].handle);
+        stats[i].state = (State)eTaskGetState(tasks[i].handle);
+        stats[i].stack = tasks[i].stack;
+        stats[i].stackUsed = tasks[i].stack -
+                              uxTaskGetStackHighWaterMark(tasks[i].handle);
+      }
+    }
 
-    enum { maxTasks = 4 };
-    TaskHandle_t* tasks[maxTasks];
+    uint8_t count() const { return length; }
+
+  private:
+    Tasks tasks[MaxTasks];
     uint8_t length;
 
 };

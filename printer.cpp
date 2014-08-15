@@ -15,9 +15,10 @@ void Printer::printDecimal(uint32_t val, bool isSigned) const {
   char* buf = out;
   int32_t asSigned = (int32_t)val;
 
-  // Print negative sign
-  if (isSigned && asSigned < 0) {
-    put('-');
+  // val is the actual value we print, so invert asSigned and throw in a
+  // negative sign
+  bool neg = isSigned && asSigned < 0;
+  if (neg) {
     val = -asSigned;
   }
 
@@ -28,10 +29,16 @@ void Printer::printDecimal(uint32_t val, bool isSigned) const {
     val /= 10;
   } while (val && (buf - out) != sizeof(out));
 
-  // Pad if necessary
-  for (int add = pad - (buf - out); add > 0; add--) {
+  // Pad if necessary, adding a negative sign either before or after the padding
+  // depenidng on whether 0's are requested
+
+  if (neg && !zeros)
+    *buf++ = '-';
+  for (int add = pad - (buf - out) - (neg ? 1 : 0); add > 0; add--) {
     *buf++ = zeros ? '0' : ' ';
   }
+  if (neg && zeros)
+    *buf++ = '-';
 
   // now reverse and print
   for (;buf != out;buf--) {

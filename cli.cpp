@@ -2,6 +2,9 @@
 
 #include <string.h>
 
+#include "driverlib/sysctl.h"
+#include "driverlib/rom_map.h"
+
 #include "common.hpp"
 #include "serialport.hpp"
 #include "parameters.hpp"
@@ -17,13 +20,13 @@ static CLI::Command commandTable[] = {
     &CLI::getParameter},
   {"set", "Sets a parameter.  Usage: set paramnumber string",
     &CLI::setParameter},
-  {"reset", "Reset the system",
-    &CLI::reset},
+  {"reset", "Reset the system", &CLI::reset},
+  {"resources", "OS and run-time information", &CLI::resources},
 };
 
 // Constructor
-CLI::CLI(SerialPort* serialPort, Parameters* parameters)
-  : next(0), p(serialPort), parameters(parameters) {
+CLI::CLI(SerialPort* serialPort, Parameters* parameters, const RTOS & rtos)
+  : next(0), p(serialPort), parameters(parameters), rtos(rtos) {
 }
 
 // FreeRTOS task that reads from queue and executes commands
@@ -135,10 +138,6 @@ bool CLI::setParameter() {
   return true;
 }
 
-#include "driverlib/sysctl.h"
-#include "FreeRTOS.h"
-#include "task.h"
-
 bool CLI::reset() {
   p->printf("Resetting...\n");
   RTOS::sleep_ms(200);
@@ -147,6 +146,26 @@ bool CLI::reset() {
 
   }
   return false;
+}
+
+bool CLI::resources() {
+
+  RTOS::TaskStats stats[RTOS::MaxTasks];
+  rtos.getTaskStats(stats, rtos.count());
+
+  p->printf("%12s\t%12s\t%8s\t%8s\n", "Name", "State", "Stack", "Stack used");
+  for (uint32_t i = 0; i < rtos.count(); i++) {
+    char state[8];
+    switch (stats[i].state) {
+      case RTOS::Ready:     strcpy(state, "Ready"); break;
+      case RTOS::Running:   strcpy(state, "Running"); break;
+      case RTOS::Blocked:   strcpy(state, "Blocked"); break;
+      case RTOS::Suspended: strcpy(state, "Suspend"); break;
+      case RTOS::Deleted:   strcpy(state, "Deleted"); break;
+    }
+    p->printf("%12s\t%12s\t%8d\t%8d\n", stats[i].name, state, stats[i].stack, stats[i].stackUsed);
+  }
+  return true;
 }
 
 // On enter

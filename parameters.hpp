@@ -55,7 +55,9 @@ class Parameters {
     void addParameter(const char* name, const char* description,
                       T* data, Qualifier qualifier);
     void get(const char* name, ResultsIterator* iter);
+    /*
     ParameterGet get(ParameterIndex index);
+    */
 
     // val is converted to the type in the table.  Returns true if succesful
     template <typename T>
