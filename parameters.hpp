@@ -53,6 +53,10 @@ class Parameters {
                       void* data, Type type, Qualifier qualifier);
     void get(const char* name, ResultsIterator* iter);
 
+    // val is converted to the type in the table.  Returns true if succesful
+    template <typename T>
+    bool set(uint8_t index, T val, char* const error = NULL);
+
   private:
 
     struct ParameterEntry {

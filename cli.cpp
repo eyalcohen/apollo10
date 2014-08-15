@@ -14,6 +14,8 @@ static CLI::Command commandTable[] = {
     &CLI::memoryDisplayWords},
   {"get", "Gets a parameter.  Usage: get [string]",
     &CLI::getParameter},
+  {"set", "Sets a parameter.  Usage: set paramnumber string",
+    &CLI::setParameter},
 };
 
 // Constructor
@@ -60,14 +62,14 @@ bool CLI::memoryDisplayWords() {
 
   // Get address
   uint32_t address;
-  if (!parseUnsignedInt(nextArg, &address))
+  if (!parseInt(nextArg, &address))
     return false;
   address = address - (address % 4);
 
   // Get count, or default to 1
   uint32_t count = 1;
   nextArg = strtok(NULL, " ,\n,\r");
-  parseUnsignedInt(nextArg, &count);
+  parseInt(nextArg, &count);
 
   // Print memory contents
   while(count--) {
@@ -102,6 +104,47 @@ bool CLI::getParameter() {
   return true;
 }
 
+bool CLI::setParameter() {
+  const char* param = strtok(NULL, " ,\n,\r");
+  if (!param)
+    return false;
+  const char* value = strtok(NULL, " ,\n,\r");
+  if (!value)
+    return false;
+  bool isSigned;
+  uint32_t parsed;
+
+  if (!parseInt(value, &parsed, &isSigned)) {
+    p->printf("Could not understand value %s\n", value);
+    return false;
+  }
+
+/*
+  parseUnsignedInt
+
+  Parameters::ResultsIterator it;
+  if (nextArg) {
+    parameters->get(nextArg, &it);
+  } else {
+    parameters->get("", &it);
+  }
+
+  for (it.reset(); it.complete(); ++it) {
+    Parameters::ParameterGet results = it.val();
+    p->printf("[%02d] %s = ", results.index, results.name, results.description);
+    if (results.type == Parameters::Int8
+        || results.type == Parameters::Int16
+        || results.type == Parameters::Int32 ) {
+      p->printf("%d", (int32_t)results.valueUntyped);
+    } else {
+      p->printf("%u", (uint32_t)results.valueUntyped);
+    }
+    p->printf("\n");
+  }
+  */
+  return true;
+}
+
 // On enter
 void CLI::execute() {
   p->putLine("");
@@ -126,23 +169,30 @@ void CLI::putPrompt() {
   p->put('>');
   p->put(' ');
 }
-bool CLI::parseUnsignedInt(const char* input, uint32_t* result) {
+bool CLI::parseInt(const char* const input, uint32_t* result,
+                   bool* isSigned) {
 
   uint32_t num = 0;
   bool hex = false;
-  if (*input == '0' && (*(input+1) == 'x' || *(input+1) == 'X')) {
+  const char* iterator = input;
+
+  if (*iterator == '0' && (*(iterator+1) == 'x' || *(iterator+1) == 'X')) {
     hex = true;
-    input += 2;
+    iterator += 2;
+  } else if (*iterator == '-') {
+    iterator++;
+    if (!isSigned)
+      *isSigned = true;
   }
 
-  for(; *input; input++) {
+  for(; *iterator; iterator++) {
     num *= hex ? 16 : 10;
-    if (hex && *input >= 'a' && *input <= 'f') {
-      num += (*input - 'a' + 10);
-    } else if (hex && *input >= 'A' && *input <= 'F') {
-      num += (*input - 'A' + 10);
-    } else if (*input >= '0' && *input <= '9'){
-      num += *input - '0';
+    if (hex && *iterator >= 'a' && *iterator <= 'f') {
+      num += (*iterator - 'a' + 10);
+    } else if (hex && *iterator >= 'A' && *iterator <= 'F') {
+      num += (*iterator - 'A' + 10);
+    } else if (*iterator >= '0' && *iterator <= '9'){
+      num += *iterator - '0';
     } else {
       return false;
     }

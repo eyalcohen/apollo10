@@ -11,6 +11,7 @@
 #define __CLI_HPP__
 
 #include <stdint.h>
+#include <stddef.h>
 
 class SerialPort;
 class Parameters;
@@ -30,6 +31,7 @@ class CLI {
     // mdw gets data in addresses and displays them
     bool memoryDisplayWords();
     bool getParameter();
+    bool setParameter();
 
     // FreeRTOS task for transmitting characters
     void task(void *params);
@@ -41,7 +43,8 @@ class CLI {
 
     // Can parse hex or unsigned integer numbers, return true if succesful,
     // if false will not modify the result
-    bool parseUnsignedInt(const char* input, uint32_t* result);
+    bool parseInt(const char* const input, uint32_t* result,
+                  bool* isSigned = NULL);
 
     char buf[64];
     uint8_t next;

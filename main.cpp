@@ -59,6 +59,8 @@ SerialPort serialPort;
 Parameters parameters;
 CLI cli(&serialPort, &parameters);
 
+int32_t test = 0;
+
 /* Interrupt Service Routines */
 void uartISR() {
   serialPort.isr();
@@ -95,6 +97,7 @@ int main() {
   ADD_RO(serialPort.rxCount, "Serial RX Counter" );
   ADD_RO(serialPort.txCount, "Serial TX Counter" );
   */
+/*
     parameters.addParameter("serialport.txCount", "bytes transmitted",
                  (void*)&serialPort.txCount, Parameters::Uint16,
                  Parameters::ReadOnly);
@@ -107,6 +110,13 @@ int main() {
     parameters.addParameter("serialport.rxCount", "bytes transmitted",
                  (void*)&serialPort.rxCount, Parameters::Uint16,
                  Parameters::ReadOnly);
+    parameters.addParameter("serialport.rxCount", "bytes transmitted",
+                 (void*)&serialPort.rxCount, Parameters::Int32,
+                 Parameters::Writable);
+    parameters.addParameter("test", "bytes transmitted",
+                 (void*)&test, Parameters::Int32,
+                 Parameters::Writable);
+                 */
 
   /*
   xTaskCreate(ledTask, "LED", LED_PORT_STACK,
