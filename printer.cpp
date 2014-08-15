@@ -69,7 +69,7 @@ void Printer::printHex(uint32_t val, bool upperCase, bool leader) const {
   for (int add = pad - (buf - out); add > 0; add--) {
     *buf++ = zeros ? '0' : ' ';
   }
-    
+
   // now reverse and print
   for (;buf != out;buf--) {
     put(*buf);
@@ -78,6 +78,16 @@ void Printer::printHex(uint32_t val, bool upperCase, bool leader) const {
 }
 
 void Printer::printString(const char* str) const {
+  int16_t count = 0;
+  for (;*str;str++) {
+    count++;
+  }
+  str -= count;
+  count = pad - count;
+  while (count > 0) {
+    put(' ');
+    count--;
+  }
   for (;*str;str++) {
     put(*str);
   }

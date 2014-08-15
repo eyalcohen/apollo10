@@ -153,7 +153,7 @@ bool CLI::resources() {
   RTOS::TaskStats stats[RTOS::MaxTasks];
   rtos.getTaskStats(stats, rtos.count());
 
-  p->printf("%12s\t%12s\t%8s\t%8s\n", "Name", "State", "Stack", "Stack used");
+  p->printf("%12s\t%12s\t%8s\t%12s\n", "Name", "State", "Stack", "Stack used");
   for (uint32_t i = 0; i < rtos.count(); i++) {
     char state[8];
     switch (stats[i].state) {
@@ -163,7 +163,7 @@ bool CLI::resources() {
       case RTOS::Suspended: strcpy(state, "Suspend"); break;
       case RTOS::Deleted:   strcpy(state, "Deleted"); break;
     }
-    p->printf("%12s\t%12s\t%8d\t%8d\n", stats[i].name, state, stats[i].stack, stats[i].stackUsed);
+    p->printf("%12s\t%12s\t%8d\t%12d\n", stats[i].name, state, stats[i].stack, stats[i].stackUsed);
   }
   return true;
 }
