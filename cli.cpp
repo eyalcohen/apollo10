@@ -5,6 +5,7 @@
 #include "common.hpp"
 #include "serialport.hpp"
 #include "parameters.hpp"
+#include "rtos.hpp"
 
 // Command table for CLI
 static CLI::Command commandTable[] = {
@@ -140,7 +141,7 @@ bool CLI::setParameter() {
 
 bool CLI::reset() {
   p->printf("Resetting...\n");
-  vTaskDelay(200);
+  RTOS::sleep_ms(200);
   SysCtlReset();
   while (true) {
 

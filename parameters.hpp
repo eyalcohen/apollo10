@@ -27,7 +27,7 @@ class Parameters {
 
     // Result from a get request
     struct ParameterGet {
-      uint8_t index;
+      ParameterIndex index;
       const char* name;
       const char* description;
       Type type;
@@ -46,7 +46,7 @@ class Parameters {
 
       private:
         void seek();
-        uint8_t next;
+        ParameterIndex next;
         const Parameters* params;
         const char* str;
     };
@@ -55,10 +55,11 @@ class Parameters {
     void addParameter(const char* name, const char* description,
                       T* data, Qualifier qualifier);
     void get(const char* name, ResultsIterator* iter);
+    ParameterGet get(ParameterIndex index);
 
     // val is converted to the type in the table.  Returns true if succesful
     template <typename T>
-    bool set(uint8_t index, T val, char* const error = NULL);
+    bool set(ParameterIndex index, T val, char* const error = NULL);
 
   private:
 
@@ -74,7 +75,7 @@ class Parameters {
     // parameter type.  Its a clever way to avoid having to send type
     // information to addParameter, akin to templating, with compile time
     // information only
-    #define S(T1, T2) void setType(uint8_t idx, T1 t) { table[idx].type = T2; }
+    #define S(T1, T2) void setType(ParameterIndex idx, T1 t) { table[idx].type = T2; }
     S(uint32_t, Uint32)
     S(uint16_t, Uint16)
     S(uint8_t, Uint8)
@@ -85,7 +86,7 @@ class Parameters {
     #undef S
 
     enum {MaxParams = 32};
-    uint8_t length;
+    ParameterIndex length;
     ParameterEntry table[MaxParams];
 
 };

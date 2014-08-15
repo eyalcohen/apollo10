@@ -84,6 +84,18 @@ void Parameters::get(const char* name, ResultsIterator* iter) {
   iter->initialize(this, name);
 }
 
+Parameters::ParameterGet Parameters::get(ParameterIndex index) {
+/*
+  ParameterGet p = { index,
+                     params->table[index].name,
+                     params->table[index].description,
+                     params->table[index].type,
+                     data };
+
+  iter->initialize(this, name);
+*/
+}
+
 template <typename T>
 bool Parameters::set(uint8_t index, T val, char* const error) {
   if (index >= length) {

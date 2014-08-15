@@ -13,7 +13,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "priorities.h"
+#include "rtos.hpp"
 #include "serialport.hpp"
 #include "cli.hpp"
 #include "parameters.hpp"
@@ -58,6 +58,7 @@ void ledTask(void *params) {
 SerialPort serialPort;
 Parameters parameters;
 CLI cli(&serialPort, &parameters);
+RTOS rtos;
 
 int32_t test = 0;
 
@@ -66,7 +67,19 @@ void uartISR() {
   serialPort.isr();
 }
 
+
 /* FreeRTOS tasks */
+
+enum Priorities {
+  UARTPriority = 1,
+  CLIPriority = 1
+};
+
+enum Stacks {
+  UARTStack = 100,
+  CLIStack = 200
+};
+
 void uartTask(void *params) {
   serialPort.task(params);
 }
@@ -81,15 +94,13 @@ int main() {
   MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
                      SYSCTL_OSC_MAIN);
 
-  xTaskCreate(uartTask, "UartTX", SERIAL_PORT_STACK,
-                 NULL, tskIDLE_PRIORITY + SERIAL_PORT_PRIORITY, NULL);
+  rtos.createTask(uartTask, "UartTX", UARTStack, UARTPriority);
 
   serialPort.initialize(115200);
   serialPort.putLine();
   serialPort.putLine("Apollo10 controller");
 
-  xTaskCreate(cliTask, "CLI", CLI_PORT_STACK,
-                 NULL, tskIDLE_PRIORITY + CLI_PORT_PRIORITY, NULL);
+  rtos.createTask(cliTask, "CLI", CLIStack, CLIPriority);
 
   #define ADD_RO(x, desc) \
     parameters.addParameter(#x, desc, &x, Parameters::ReadOnly);
