@@ -32,6 +32,7 @@ class CLI {
     bool memoryDisplayWords();
     bool getParameter();
     bool setParameter();
+    bool reset();
 
     // FreeRTOS task for transmitting characters
     void task(void *params);

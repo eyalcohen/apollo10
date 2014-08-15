@@ -16,6 +16,8 @@ static CLI::Command commandTable[] = {
     &CLI::getParameter},
   {"set", "Sets a parameter.  Usage: set paramnumber string",
     &CLI::setParameter},
+  {"reset", "Reset the system",
+    &CLI::reset},
 };
 
 // Constructor
@@ -130,6 +132,20 @@ bool CLI::setParameter() {
   }
 
   return true;
+}
+
+#include "driverlib/sysctl.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+bool CLI::reset() {
+  p->printf("Resetting...\n");
+  vTaskDelay(200);
+  SysCtlReset();
+  while (true) {
+
+  }
+  return false;
 }
 
 // On enter
