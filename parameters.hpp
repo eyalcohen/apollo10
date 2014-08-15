@@ -23,9 +23,11 @@ class Parameters {
       Int8, Int16, Int32, Uint8, Uint16, Uint32, Float
     };
 
+    typedef uint8_t ParameterIndex;
+
     // Result from a get request
     struct ParameterGet {
-      uint16_t index;
+      uint8_t index;
       const char* name;
       const char* description;
       Type type;
@@ -44,13 +46,14 @@ class Parameters {
 
       private:
         void seek();
-        uint16_t next;
+        uint8_t next;
         const Parameters* params;
         const char* str;
     };
 
+    template <typename T>
     void addParameter(const char* name, const char* description,
-                      void* data, Type type, Qualifier qualifier);
+                      T* data, Qualifier qualifier);
     void get(const char* name, ResultsIterator* iter);
 
     // val is converted to the type in the table.  Returns true if succesful
@@ -66,6 +69,20 @@ class Parameters {
       void* data; // Type information is stored as an enum
       Type type;
     };
+
+    // This macro defines many setType functions that can be used to set the
+    // parameter type.  Its a clever way to avoid having to send type
+    // information to addParameter, akin to templating, with compile time
+    // information only
+    #define S(T1, T2) void setType(uint8_t idx, T1 t) { table[idx].type = T2; }
+    S(uint32_t, Uint32)
+    S(uint16_t, Uint16)
+    S(uint8_t, Uint8)
+    S(int8_t, Int8)
+    S(int16_t, Int16)
+    S(int32_t, Int32)
+    S(float, Float)
+    #undef S
 
     enum {MaxParams = 32};
     uint8_t length;

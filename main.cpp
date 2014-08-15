@@ -91,28 +91,15 @@ int main() {
   xTaskCreate(cliTask, "CLI", CLI_PORT_STACK,
                  NULL, tskIDLE_PRIORITY + CLI_PORT_PRIORITY, NULL);
 
-/*
-  #define ADD_RO(x, desc) parameters.addParameter(#x, desc, &x, Parameters::ReadOnly)
-  #define ADD_RW(x, desc) parameters.addParameter(#x, desc, &x, Parameters::Writable)
-  ADD_RO(serialPort.rxCount, "Serial RX Counter" );
-  ADD_RO(serialPort.txCount, "Serial TX Counter" );
-  */
-/*
-    parameters.addParameter("serialport.txCount", "bytes transmitted",
-                 (void*)&serialPort.txCount, Parameters::Uint16,
-                 Parameters::ReadOnly);
-    parameters.addParameter("serialport.rxCount", "bytes transmitted",
-                 (void*)&serialPort.rxCount, Parameters::Uint16,
-                 Parameters::ReadOnly);
-    parameters.addParameter("serialport.txCount", "bytes transmitted",
-                 (void*)&serialPort.txCount, Parameters::Uint16,
-                 Parameters::ReadOnly);
-    parameters.addParameter("serialport.rxCount", "bytes transmitted",
-                 (void*)&serialPort.rxCount, Parameters::Uint16,
-                 Parameters::ReadOnly);
-    parameters.addParameter("serialport.rxCount", "bytes transmitted",
-                 (void*)&serialPort.rxCount, Parameters::Int32,
-                 Parameters::Writable);
+  #define ADD_RO(x, desc) \
+    parameters.addParameter(#x, desc, &x, Parameters::ReadOnly);
+  #define ADD_RW(x, desc) \
+    parameters.addParameter(#x, desc, &x, Parameters::Writable);
+
+  ADD_RO(serialPort.rxCount, "Rx Bytes transmitted");
+  ADD_RO(serialPort.txCount, "Tx Bytes transmitted");
+  ADD_RW(test, "test");
+  /*
     parameters.addParameter("test", "bytes transmitted",
                  (void*)&test, Parameters::Int32,
                  Parameters::Writable);

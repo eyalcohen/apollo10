@@ -58,18 +58,27 @@ void Parameters::ResultsIterator::seek() {
 }
 
 
+template <typename T>
 void Parameters::addParameter(const char* name,
                               const char* description,
-                              void* data, Type type,
+                              T* data, 
                               Qualifier qualifier) {
 
   table[length].name = name;
   table[length].description = description;
-  table[length].data = data;
+  table[length].data = (void*)data;
   table[length].qualifier = qualifier;
-  table[length].type = type;
+  setType(length, *data);
   length++;
 }
+
+// Define the only template specializations we will end up using
+#define S(T) \
+  template void Parameters::addParameter<T> \
+    (const char*, const char*, T*, Qualifier)
+S(int8_t); S(int16_t); S(int32_t);
+S(uint8_t); S(uint16_t); S(uint32_t); S(float);
+#undef S
 
 void Parameters::get(const char* name, ResultsIterator* iter) {
   iter->initialize(this, name);
@@ -81,14 +90,9 @@ bool Parameters::set(uint8_t index, T val, char* const error) {
     if (error) strcpy(error, "Index exceeds parameter length");
     return false;
   }
-  if (table[length].qualifier == ReadOnly) {
+  if (table[index].qualifier == ReadOnly) {
     if (error) strcpy(error, "This parameter is read-only");
     return false;
-  }
-  if (!val) {
-    if (error) strcpy(error, "null pointer");
-    return false;
-
   }
 
   switch (table[index].type) {
@@ -103,11 +107,9 @@ bool Parameters::set(uint8_t index, T val, char* const error) {
 
   return true;
 }
+#define S(T) \
+  template bool Parameters::set<T>(uint8_t, T, char* const error)
+S(int8_t); S(int16_t); S(int32_t);
+S(uint8_t); S(uint16_t); S(uint32_t); S(float);
+#undef S
 
-template bool Parameters::set<int8_t>(uint8_t, int8_t, char* const error);
-template bool Parameters::set<int16_t>(uint8_t, int16_t, char* const error);
-template bool Parameters::set<int32_t>(uint8_t, int32_t, char* const error);
-template bool Parameters::set<uint8_t>(uint8_t, uint8_t, char* const error);
-template bool Parameters::set<uint16_t>(uint8_t, uint16_t, char* const error);
-template bool Parameters::set<uint32_t>(uint8_t, uint32_t, char* const error);
-template bool Parameters::set<float>(uint8_t, float, char* const error);

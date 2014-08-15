@@ -105,43 +105,30 @@ bool CLI::getParameter() {
 }
 
 bool CLI::setParameter() {
-  const char* param = strtok(NULL, " ,\n,\r");
-  if (!param)
+  const char* paramString = strtok(NULL, " ,\n,\r");
+  if (!paramString)
     return false;
-  const char* value = strtok(NULL, " ,\n,\r");
-  if (!value)
+  const char* valueString = strtok(NULL, " ,\n,\r");
+  if (!valueString)
     return false;
   bool isSigned;
-  uint32_t parsed;
 
-  if (!parseInt(value, &parsed, &isSigned)) {
-    p->printf("Could not understand value %s\n", value);
+  uint32_t param, val;
+  if (!parseInt(paramString, &param)) {
+    p->printf("Could not understand param %s\n", paramString);
     return false;
   }
 
-/*
-  parseUnsignedInt
-
-  Parameters::ResultsIterator it;
-  if (nextArg) {
-    parameters->get(nextArg, &it);
-  } else {
-    parameters->get("", &it);
+  if (!parseInt(valueString, &val, &isSigned)) {
+    p->printf("Could not understand value %s\n", valueString);
+    return false;
   }
 
-  for (it.reset(); it.complete(); ++it) {
-    Parameters::ParameterGet results = it.val();
-    p->printf("[%02d] %s = ", results.index, results.name, results.description);
-    if (results.type == Parameters::Int8
-        || results.type == Parameters::Int16
-        || results.type == Parameters::Int32 ) {
-      p->printf("%d", (int32_t)results.valueUntyped);
-    } else {
-      p->printf("%u", (uint32_t)results.valueUntyped);
-    }
-    p->printf("\n");
+  char err[32];
+  if (!parameters->set(param, isSigned ? (int32_t)val: (uint32_t)val, err)) {
+    p->printf("Error %s\n", err);
   }
-  */
+
   return true;
 }
 
@@ -157,9 +144,12 @@ void CLI::execute() {
     if (strcmp(first, commandTable[i].name) == 0) {
       bool (CLI::*ptr)(void) = commandTable[i].fcn;
       bool result = (*this.*ptr)();
-      if (!result)
+      if (!result) {
         p->printf("  %s - %s\n", commandTable[i].name,
                                  commandTable[i].description);
+      }
+      next = 0;
+      break;
     }
   }
   putPrompt();
