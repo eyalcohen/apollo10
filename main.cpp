@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "inc/hw_memmap.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/rom.h"
 #include "driverlib/rom_map.h"
@@ -18,47 +19,33 @@
 #include "cli.hpp"
 #include "parameters.hpp"
 
-//CLI cli;
+/* Globals */
+SerialPort serialPort;
+static RTOS rtos;
+static Parameters parameters;
+static CLI cli(&serialPort, &parameters, rtos);
 
 void ledTask(void *params) {
 
-  #define RED_GPIO_PIN_CFG        GPIO_PF1_T0CCP1
-  #define BLUE_GPIO_PIN_CFG       GPIO_PF2_T1CCP0
-  #define GREEN_GPIO_PIN_CFG      GPIO_PF3_T1CCP1
-  #define RED_GPIO_PIN            GPIO_PIN_1
-  #define BLUE_GPIO_PIN           GPIO_PIN_2
-  #define GREEN_GPIO_PIN          GPIO_PIN_3
+  enum { Red = GPIO_PIN_1, Blue = GPIO_PIN_2, Green = GPIO_PIN_3,
+         All = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 };
+  uint32_t freq = 500;
 
-/*
   MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-  MAP_GPIOPinConfigure(GREEN_GPIO_PIN_CFG);
-  MAP_GPIOPinConfigure(RED_GPIO_PIN_CFG);
-  MAP_GPIOPinConfigure(BLUE_GPIO_PIN_CFG);
-  MAP_GPIOPadConfigSet(SYSCTL_PERIPH_GPIOF, GREEN_GPIO_PIN, GPIO_STRENGTH_8MA_SC,
-                       GPIO_PIN_TYPE_STD);
+  MAP_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, All);
 
-  //MAP_GPIOPinWrite(SYSCTL_PERIPH_GPIOF, GREEN_GPIO_PIN, true);
-*/
+  TickType_t xLastWakeTime = xTaskGetTickCount();
 
-  TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 1000;
-
-  // Initialise the xLastWakeTime variable with the current time.
-  xLastWakeTime = xTaskGetTickCount();
+  MAP_GPIOPinWrite(GPIO_PORTF_BASE, All, 0);
 
   while (1) {
-    // Wait for the next cycle.
-    vTaskDelayUntil( &xLastWakeTime, xFrequency );
-    //serialPort.test();
 
+    static bool heartBeat = false;
+    MAP_GPIOPinWrite(GPIO_PORTF_BASE, Red | Blue, heartBeat ? Red | Blue : 0);
+    heartBeat = !heartBeat;
+    vTaskDelayUntil( &xLastWakeTime, freq );
   }
 }
-
-/* Globals */
-RTOS rtos;
-SerialPort serialPort;
-Parameters parameters;
-CLI cli(&serialPort, &parameters, rtos);
 
 int32_t test = 0;
 
@@ -102,6 +89,8 @@ int main() {
 
   rtos.createTask(cliTask, "CLI", CLIStack, CLIPriority);
 
+  rtos.createTask(ledTask, "LED", 100, 1);
+
   #define ADD_RO(x, desc) \
     parameters.addParameter(#x, desc, &x, Parameters::ReadOnly);
   #define ADD_RW(x, desc) \
@@ -110,16 +99,6 @@ int main() {
   ADD_RO(serialPort.rxCount, "Rx Bytes transmitted");
   ADD_RO(serialPort.txCount, "Tx Bytes transmitted");
   ADD_RW(test, "test");
-  /*
-    parameters.addParameter("test", "bytes transmitted",
-                 (void*)&test, Parameters::Int32,
-                 Parameters::Writable);
-                 */
-
-  /*
-  xTaskCreate(ledTask, "LED", LED_PORT_STACK,
-                 NULL, tskIDLE_PRIORITY + LED_PORT_PRIORITY, NULL);
-                 */
 
   vTaskStartScheduler();
   while (1) {}
