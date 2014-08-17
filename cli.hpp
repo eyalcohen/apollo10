@@ -27,6 +27,7 @@ class CLI {
       bool (CLI::*fcn)(void);
     };
 
+    // CLI Commands
     bool printHelp();
     bool printVersion();
     // mdw gets data in addresses and displays them
@@ -35,6 +36,11 @@ class CLI {
     bool setParameter();
     bool reset();
     bool resources();
+    
+    // parameter management
+    bool save();
+    bool load();
+    bool erase();
 
     // FreeRTOS task for transmitting characters
     void task(void *params);

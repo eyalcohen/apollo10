@@ -2,7 +2,8 @@
  * parameters.hpp
  * Author: Eyal Cohen
  *
- *
+ * A table of parameters that are stored in RAM.  Parameters
+ * are pointers to 8, 16 or 32-bit values
  */
 
 #ifndef __PARAMETERS_HPP__
@@ -12,17 +13,23 @@
 #include <string.h>
 
 class Parameters {
+
+  friend class ParameterSave;
+
   public:
     Parameters() : length(0) {}
 
+    // FlashWritable parametes can be stored in a ROM.
     enum Qualifier {
-      ReadOnly, Writable
+      ReadOnly, Writable, FlashWritable
     };
 
+    // Supported types
     enum Type {
       Int8, Int16, Int32, Uint8, Uint16, Uint32, Float
     };
 
+    // typedeffed if we ever need more than 256 indexes
     typedef uint8_t ParameterIndex;
 
     // Result from a get request
@@ -34,7 +41,8 @@ class Parameters {
       uint32_t valueUntyped;
     };
 
-    // Used to iterate over results from get requests
+    // Used to iterate over results from get requests.  A client
+    // may make a get request and get this iterator as a result.
     class ResultsIterator {
       public:
         ResultsIterator();
@@ -55,7 +63,8 @@ class Parameters {
     void addParameter(const char* name, const char* description,
                       T* data, Qualifier qualifier);
     void get(const char* name, ResultsIterator* iter);
-    /*
+
+    /* TODO
     ParameterGet get(ParameterIndex index);
     */
 
@@ -65,6 +74,7 @@ class Parameters {
 
   private:
 
+    // The actual stored entry
     struct ParameterEntry {
       const char* name;
       const char* description;
@@ -87,8 +97,13 @@ class Parameters {
     S(float, Float)
     #undef S
 
+    // Max parameters we currently support
     enum {MaxParams = 32};
+
+    // Current number of parmaeters
     ParameterIndex length;
+
+    // The actual parameter table
     ParameterEntry table[MaxParams];
 
 };

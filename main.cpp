@@ -25,6 +25,8 @@ static RTOS rtos;
 static Parameters parameters;
 static CLI cli(&serialPort, &parameters, rtos);
 
+int32_t test1, test2, test3;
+
 void ledTask(void *params) {
 
   enum { Red = GPIO_PIN_1, Blue = GPIO_PIN_2, Green = GPIO_PIN_3,
@@ -47,8 +49,6 @@ void ledTask(void *params) {
   }
 }
 
-int32_t test = 0;
-
 /* Interrupt Service Routines */
 void uartISR() {
   serialPort.isr();
@@ -64,7 +64,7 @@ enum Priorities {
 
 enum Stacks {
   UARTStack = 100,
-  CLIStack = 200
+  CLIStack = 400
 };
 
 void uartTask(void *params) {
@@ -95,10 +95,15 @@ int main() {
     parameters.addParameter(#x, desc, &x, Parameters::ReadOnly);
   #define ADD_RW(x, desc) \
     parameters.addParameter(#x, desc, &x, Parameters::Writable);
+  #define ADD_ROM(x, desc) \
+    parameters.addParameter(#x, desc, &x, Parameters::FlashWritable);
 
   ADD_RO(serialPort.rxCount, "Rx Bytes transmitted");
+  ADD_ROM(test1, "Test1");
   ADD_RO(serialPort.txCount, "Tx Bytes transmitted");
-  ADD_RW(test, "test");
+  ADD_ROM(test2, "Test2");
+  ADD_ROM(test3, "Test3");
+
 
   vTaskStartScheduler();
   while (1) {}

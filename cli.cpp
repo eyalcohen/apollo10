@@ -9,6 +9,7 @@
 #include "serialport.hpp"
 #include "parameters.hpp"
 #include "rtos.hpp"
+#include "parameter_save.hpp"
 
 // Command table for CLI
 static CLI::Command commandTable[] = {
@@ -22,6 +23,9 @@ static CLI::Command commandTable[] = {
     &CLI::setParameter},
   {"reset", "Reset the system", &CLI::reset},
   {"resources", "OS and run-time information", &CLI::resources},
+  {"save", "Save parameters to EEPROM", &CLI::save},
+  {"load", "Load parameters from EEPROM", &CLI::load},
+  {"erase", "Erase parameters from EEPROM", &CLI::erase},
 };
 
 // Constructor
@@ -31,8 +35,15 @@ CLI::CLI(SerialPort* serialPort, Parameters* parameters, const RTOS & rtos)
 
 // FreeRTOS task that reads from queue and executes commands
 void CLI::task(void *params) {
+
+  // CLI initialization
   putPrompt();
-  while (1) {
+  char err[32];
+  if (!ParameterSave::init(err)) {
+    p->printf("EEPROM initialization error: %s\n", err);
+  }
+
+  while (true) {
     char c = p->get((uint32_t)-1);
     if (next != sizeof(buf)) {
       buf[next++] = c;
@@ -167,6 +178,37 @@ bool CLI::resources() {
   }
   return true;
 }
+
+bool CLI::save() {
+  char err[32];
+  if (!ParameterSave::save(parameters, err)) {
+    p->printf("Parameter save error: %s\n", err);
+    return false;
+  }
+  p->putLine("Saved parameter set");
+  return true;
+}
+
+bool CLI::load() {
+  char err[ERR_BYTES];
+  if (!ParameterSave::load(parameters, err)) {
+    p->printf("Parameter load error: %s\n", err);
+    return false;
+  }
+  p->putLine("Loaded parameter set");
+  return true;
+}
+
+bool CLI::erase() {
+  char err[ERR_BYTES];
+  if (!ParameterSave::erase(err)) {
+    p->printf("Parameter erase error: %s\n", err);
+    return false;
+  }
+  p->putLine("Erased parameter set");
+  return true;
+}
+
 
 // On enter
 void CLI::execute() {
