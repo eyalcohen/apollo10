@@ -62,8 +62,8 @@ IPATH+=./libs/FreeRTOS/Source/include
 #
 # The default rule, which causes the FreeRTOS example to be built.
 #
-all: ${COMPILER}
-all: ${COMPILER}/apollo10.axf
+compile: ${COMPILER}
+compile: ${COMPILER}/apollo10.axf size
 
 #
 # The rule to clean out all the build products.
@@ -76,6 +76,12 @@ clean:
 #
 ${COMPILER}:
 	@mkdir -p ${COMPILER}
+
+size: ${COMPILER}/apollo10.axf
+	${SIZE} ${COMPILER}/apollo10.axf
+
+load: compile ${COMPILER}/apollo10.bin
+	lm4flash ${word 2, $^}
 
 #
 # Rules for building the FreeRTOS example.

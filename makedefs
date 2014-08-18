@@ -113,7 +113,8 @@ CFLAGS=-mthumb             \
 CFLAGS_CC=-std=c99
 
 CFLAGS_CXX=-fno-exceptions \
-           -fno-rtti
+           -fno-rtti \
+           -Weffc++
 
 #
 # The command for calling the library archiver.
@@ -128,7 +129,8 @@ LD=${PREFIX}-ld
 #
 # The flags passed to the linker.
 #
-LDFLAGS=--gc-sections
+LDFLAGS=--gc-sections \
+        -Map ${@:.axf=}.map
 
 #
 # Get the location of libgcc.a from the GCC front-end.
@@ -149,6 +151,8 @@ LIBM:=${shell ${CC} ${CFLAGS} -print-file-name=libm.a}
 # The command for extracting images from the linked executables.
 #
 OBJCOPY=${PREFIX}-objcopy
+
+SIZE=${PREFIX}-size
 
 #
 # Tell the compiler to include debugging information if the DEBUG environment
