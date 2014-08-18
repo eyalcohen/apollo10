@@ -14,8 +14,9 @@ void Parameters::ResultsIterator::reset() {
   seek();
 }
 
-void Parameters::ResultsIterator::operator++() {
+Parameters::ResultsIterator& Parameters::ResultsIterator::operator++() {
   seek();
+  return *this;
 }
 
 Parameters::ParameterGet Parameters::ResultsIterator::val() {

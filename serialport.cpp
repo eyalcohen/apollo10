@@ -21,14 +21,13 @@
 #include "task.h"
 
 
-SerialPort::SerialPort() : rxCount(0), txCount(0) {
+SerialPort::SerialPort() : rxCount(0), txCount(0), 
+  rxQueue(xQueueCreate(BufferSize, sizeof(char))),
+  txQueue(xQueueCreate(BufferSize, sizeof(char))) {
 
 }
 
 void SerialPort::initialize(uint32_t baud) {
-
-    rxQueue = xQueueCreate(BufferSize, sizeof(char));
-    txQueue = xQueueCreate(BufferSize, sizeof(char));
 
     // Enable peripherals
     MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);

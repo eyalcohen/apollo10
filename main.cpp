@@ -43,7 +43,7 @@ void ledTask(void *params) {
   while (1) {
 
     static bool heartBeat = false;
-    MAP_GPIOPinWrite(GPIO_PORTF_BASE, Red | Blue, heartBeat ? Red | Blue : 0);
+    //MAP_GPIOPinWrite(GPIO_PORTF_BASE, Red | Blue, heartBeat ? Red | Blue : 0);
     heartBeat = !heartBeat;
     vTaskDelayUntil( &xLastWakeTime, freq );
   }

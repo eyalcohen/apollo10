@@ -48,7 +48,7 @@ class Parameters {
         ResultsIterator();
         void initialize(const Parameters* params, const char* name);
         void reset();
-        void operator++();
+        ResultsIterator& operator++();
         ParameterGet val();
         bool complete();
 
