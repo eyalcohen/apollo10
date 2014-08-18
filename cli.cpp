@@ -45,12 +45,13 @@ void CLI::task(void *params) {
 
   while (true) {
     char c = p->get((uint32_t)-1);
-    if (next != sizeof(buf)) {
+    if (next != sizeof(buf) - 1) {
       buf[next++] = c;
     }
     switch (c) {
       case '\n':
       case '\r':
+        buf[next++] = '\0';
         execute();
         break;
       default:
