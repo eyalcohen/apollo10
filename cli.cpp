@@ -19,7 +19,7 @@ static CLI::Command commandTable[] = {
     &CLI::memoryDisplayWords},
   {"get", "Gets a parameter.  Usage: get [string]",
     &CLI::getParameter},
-  {"set", "Sets a parameter.  Usage: set paramnumber string",
+  {"set", "Sets a parameter.  Usage: set paramNumber|paramName string",
     &CLI::setParameter},
   {"reset", "Reset the system", &CLI::reset},
   {"resources", "OS and run-time information", &CLI::resources},
@@ -135,9 +135,10 @@ bool CLI::setParameter() {
   bool isSigned;
 
   uint32_t param, val;
+
+  bool paramIsNum = true;
   if (!parseInt(paramString, &param)) {
-    p->printf("Could not understand param %s\n", paramString);
-    return false;
+    paramIsNum = false;
   }
 
   if (!parseInt(valueString, &val, &isSigned)) {
@@ -146,8 +147,17 @@ bool CLI::setParameter() {
   }
 
   char err[32];
-  if (!parameters->set(param, isSigned ? (int32_t)val: (uint32_t)val, err)) {
-    p->printf("Error %s\n", err);
+  if (paramIsNum) {
+    if (!parameters->set(param, isSigned ? (int32_t)val: (uint32_t)val, err)) {
+      p->printf("Error %s\n", err);
+      return false;
+    }
+
+  } else {
+    if (!parameters->set(paramString, isSigned ? (int32_t)val: (uint32_t)val, err)) {
+      p->printf("Error %s\n", err);
+      return false;
+    }
   }
 
   return true;

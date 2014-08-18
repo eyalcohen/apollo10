@@ -1,4 +1,5 @@
 #include "parameters.hpp"
+#include <string.h>
 
 Parameters::ResultsIterator::ResultsIterator() :
   next(0), params(NULL), str(NULL) {}
@@ -52,7 +53,8 @@ void Parameters::ResultsIterator::seek() {
     return;
 
   for (;next < params->length; next++) {
-    if (strstr(params->table[next].name, str)) {
+    const char* result = strstr(params->table[next].name, str);
+    if (result == params->table[next].name || !strlen(str)) {
       break;
     }
   }
@@ -85,26 +87,39 @@ void Parameters::get(const char* name, ResultsIterator* iter) {
   iter->initialize(this, name);
 }
 
-/*
-Parameters::ParameterGet Parameters::get(ParameterIndex index) {
-  ParameterGet p = { index,
-                     params->table[index].name,
-                     params->table[index].description,
-                     params->table[index].type,
-                     data };
+bool Parameters::get(ParameterIndex index, ParameterGet* get) {
 
-  iter->initialize(this, name);
+  if (!get) return false;
+  if (index > MaxParams) return false;
+
+  uint32_t data;
+  switch (table[index].type) {
+    case Uint8:  data = *(uint8_t*) table[index].data; break;
+    case Uint16: data = *(uint16_t*)table[index].data; break;
+    default:
+    case Uint32: data = *(uint32_t*)table[index].data; break;
+    case Int8:   data = *(int8_t*)  table[index].data; break;
+    case Int16:  data = *(int16_t*) table[index].data; break;
+    case Int32:  data = *(int32_t*) table[index].data; break;
+  }
+
+  get->index = index;
+  get->name = table[index].name;
+  get->description = table[index].description;
+  get->type = table[index].type;
+  get->valueUntyped = data;
+
+  return true;
 }
-*/
 
 template <typename T>
-bool Parameters::set(uint8_t index, T val, char* const error) {
+bool Parameters::set(ParameterIndex index, T val, char err[ERR_BYTES]) {
   if (index >= length) {
-    if (error) strcpy(error, "Index exceeds parameter length");
+    if (err) strncpy(err, "Index exceeds parameter length", ERR_BYTES);
     return false;
   }
   if (table[index].qualifier == ReadOnly) {
-    if (error) strcpy(error, "This parameter is read-only");
+    if (err) strncpy(err, "This parameter is read-only", ERR_BYTES);
     return false;
   }
 
@@ -120,8 +135,44 @@ bool Parameters::set(uint8_t index, T val, char* const error) {
 
   return true;
 }
+
+template <typename T>
+bool Parameters::set(const char* name, T val, char err[ERR_BYTES]) {
+  ParameterIndex index = MaxParams;
+  for (ParameterIndex i = 0; i < length; i++) {
+    if (strncmp(name, table[i].name, MaxParamName) == 0) {
+      index = i;
+      break;
+    }
+  }
+
+  if (index == MaxParams) {
+    if (err) strncpy(err, "Could not find this parameter", ERR_BYTES);
+    return false;
+  }
+
+  if (table[index].qualifier == ReadOnly) {
+    if (err) strncpy(err, "This parameter is read-only", ERR_BYTES);
+    return false;
+  }
+
+  switch (table[index].type) {
+    case Int8:   *(int8_t*)   table[index].data = val; break;
+    case Int16:  *(int16_t*)  table[index].data = val; break;
+    case Int32:  *(int32_t*)  table[index].data = val; break;
+    case Uint8:  *(uint8_t*)  table[index].data = val; break;
+    case Uint16: *(uint16_t*) table[index].data = val; break;
+    case Uint32: *(uint32_t*) table[index].data = val; break;
+    case Float:  *(float*)    table[index].data = val; break;
+  }
+
+  return true;
+}
+
+
 #define S(T) \
-  template bool Parameters::set<T>(uint8_t, T, char* const error)
+  template bool Parameters::set<T>(ParameterIndex, T, char err[ERR_BYTES]); \
+  template bool Parameters::set<T>(const char*, T, char err[ERR_BYTES])
 S(int8_t); S(int16_t); S(int32_t);
 S(uint8_t); S(uint16_t); S(uint32_t); S(float);
 #undef S

@@ -133,8 +133,9 @@ bool ParameterSave::load(Parameters* parameters, char err[ERR_BYTES]) {
     return false;
   }
 
-  // Load all parameters
+  // Load all parameters from EEPROM
   for (uint32_t i = 0; i < header.parameterCount; i++) {
+    // Get Param information
     ParamHeader paramHeader;
     uint32_t paramHeaderSize = align32(sizeof(paramHeader));
     EEPROMRead((uint32_t*)&paramHeader, address, paramHeaderSize);
@@ -142,6 +143,9 @@ bool ParameterSave::load(Parameters* parameters, char err[ERR_BYTES]) {
     char name[64];
     EEPROMRead((uint32_t*)name, address, paramHeader.nameLen);
     address += paramHeader.nameLen;
+
+    // Now copy to parameters
+    //for (uint32_t i = 0; i < parameters->
   }
 
   return true;

@@ -13,6 +13,9 @@
 #include "common.hpp"
 #include "parameters.hpp"
 
+#include "serialport.hpp"
+extern SerialPort serialPort;
+
 class ParameterSave {
   public:
     ParameterSave();
