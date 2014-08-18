@@ -42,6 +42,9 @@ void CLI::task(void *params) {
   if (!ParameterSave::init(err)) {
     p->printf("EEPROM initialization error: %s\n", err);
   }
+  if (!ParameterSave::load(parameters, err)) {
+    p->printf("EEPROM initialization error: %s\n", err);
+  }
 
   while (true) {
     char c = p->get((uint32_t)-1);
