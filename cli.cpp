@@ -7,7 +7,6 @@
 
 #include "common.hpp"
 #include "serialport.hpp"
-#include "parameters.hpp"
 #include "rtos.hpp"
 #include "parameter_save.hpp"
 
@@ -17,7 +16,7 @@ static CLI::Command commandTable[] = {
   {"help", "This help menu", &CLI::printHelp},
   {"mdw", "Display data in addresses. Usage: mdw [address] [count]",
     &CLI::memoryDisplayWords},
-  {"get", "Gets a parameter.  Usage: get [string]",
+  {"get", "Gets a parameter.  Usage: get [paramName|paramNumber]",
     &CLI::getParameter},
   {"set", "Sets a parameter.  Usage: set paramNumber|paramName string",
     &CLI::setParameter},
@@ -37,27 +36,46 @@ CLI::CLI(SerialPort* serialPort, Parameters* parameters, const RTOS & rtos)
 void CLI::task(void *params) {
 
   // CLI initialization
-  putPrompt();
   char err[32];
   if (!ParameterSave::init(err)) {
     p->printf("EEPROM initialization error: %s\n", err);
   }
   if (!ParameterSave::load(parameters, err)) {
-    p->printf("EEPROM initialization error: %s\n", err);
+    p->printf("EEPROM load error: %s\n", err);
+  } else {
+    p->printf("Loaded parameters from EEPROM\n");
   }
+  putPrompt();
 
   while (true) {
     char c = p->get((uint32_t)-1);
-    if (next != sizeof(buf) - 1) {
-      buf[next++] = c;
-    }
+    //p->printf("\nchar:%d\n", c);
     switch (c) {
+      //backspace
+      /*
+      case 127:
+        if (next != 0)
+          next--;
+        break;
+        p->put(0x1b);
+        p->printf("[1D");
+        p->put(0x1b);
+        p->printf("[K");
+      */
       case '\n':
       case '\r':
-        buf[next++] = '\0';
-        execute();
+        if (next != 0) {
+          buf[next++] = '\0';
+          execute();
+        } else {
+          p->putLine();
+          putPrompt();
+        }
         break;
       default:
+        if (next != sizeof(buf) - 1) {
+          buf[next++] = c;
+        }
         p->put(c);
         break;
     }
@@ -104,26 +122,41 @@ bool CLI::memoryDisplayWords() {
 bool CLI::getParameter() {
   const char* nextArg = strtok(NULL, " ,\n,\r");
   Parameters::ResultsIterator it;
-  if (nextArg) {
+  Parameters::ParameterGet param;
+  uint32_t paramNumber = (uint32_t)-1;
+
+  // First try getting the param number
+  if (parseInt(nextArg, &paramNumber))
+    parameters->get(paramNumber, &param);
+  else if (nextArg) {
     parameters->get(nextArg, &it);
   } else {
     parameters->get("", &it);
   }
 
-  for (it.reset(); it.complete(); ++it) {
-    Parameters::ParameterGet results = it.val();
-    p->printf("[%02d] %s = ", results.index, results.name, results.description);
-    if (results.type == Parameters::Int8
-        || results.type == Parameters::Int16
-        || results.type == Parameters::Int32 ) {
-      p->printf("%d", (int32_t)results.valueUntyped);
-    } else {
-      p->printf("%u", (uint32_t)results.valueUntyped);
+  if (paramNumber != (uint32_t)-1) {
+    printParam(&param);
+  } else {
+    for (it.reset(); it.complete(); ++it) {
+      Parameters::ParameterGet result = it.val();
+      printParam(&result);
     }
-    p->printf("\n");
   }
   return true;
 }
+
+void CLI::printParam(const Parameters::ParameterGet* param) {
+  p->printf("[%02d] %s = ", param->index, param->name, param->description);
+  if (param->type == Parameters::Int8
+      || param->type == Parameters::Int16
+      || param->type == Parameters::Int32 ) {
+    p->printf("%d", (int32_t)param->valueUntyped);
+  } else {
+    p->printf("%u", (uint32_t)param->valueUntyped);
+  }
+  p->printf("\n");
+}
+
 
 bool CLI::setParameter() {
   const char* paramString = strtok(NULL, " ,\n,\r");
@@ -142,7 +175,7 @@ bool CLI::setParameter() {
   }
 
   if (!parseInt(valueString, &val, &isSigned)) {
-    p->printf("Could not understand value %s\n", valueString);
+    p->printf("\"%s\" is not a command\n", valueString);
     return false;
   }
 
@@ -153,10 +186,23 @@ bool CLI::setParameter() {
       return false;
     }
 
+    // Print parameter from integer
+    Parameters::ParameterGet paramGet;
+    parameters->get(param, &paramGet);
+    printParam(&paramGet);
+
   } else {
     if (!parameters->set(paramString, isSigned ? (int32_t)val: (uint32_t)val, err)) {
       p->printf("Error %s\n", err);
       return false;
+    }
+
+    // Print parameter from string name
+    Parameters::ResultsIterator it;
+    parameters->get(paramString, &it);
+    for (it.reset(); it.complete(); ++it) {
+      Parameters::ParameterGet result = it.val();
+      printParam(&result);
     }
   }
 
@@ -232,7 +278,8 @@ void CLI::execute() {
   const char* first = strtok(buf,  " ,\n,\r");
 
   // Arcane C++ syntax to call a member function pointer
-  for (uint32_t i = 0; i < ARRAY_LENGTH(commandTable); i++) {
+  uint32_t i;
+  for (i = 0; i < ARRAY_LENGTH(commandTable); i++) {
     if (strcmp(first, commandTable[i].name) == 0) {
       bool (CLI::*ptr)(void) = commandTable[i].fcn;
       bool result = (*this.*ptr)();
@@ -243,6 +290,9 @@ void CLI::execute() {
       next = 0;
       break;
     }
+  }
+  if (i == ARRAY_LENGTH(commandTable)) {
+    p->printf("\"%s\" is not a command\n", first);
   }
   putPrompt();
 }

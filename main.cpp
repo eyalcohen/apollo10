@@ -64,7 +64,7 @@ enum Priorities {
 
 enum Stacks {
   UARTStack = 100,
-  CLIStack = 400
+  CLIStack = 200
 };
 
 void uartTask(void *params) {
@@ -85,7 +85,7 @@ int main() {
 
   serialPort.initialize(115200);
   serialPort.putLine();
-  serialPort.putLine("Apollo10 controller");
+  serialPort.putLine("Welcome to the Apollo10 controller");
 
   rtos.createTask(cliTask, "CLI", CLIStack, CLIPriority);
 

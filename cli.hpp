@@ -12,9 +12,10 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "parameters.hpp"
 
+// Forward declarations
 class SerialPort;
-class Parameters;
 class RTOS;
 
 class CLI {
@@ -49,6 +50,8 @@ class CLI {
 
     void execute();
     void putPrompt();
+
+    void printParam(const Parameters::ParameterGet* param);
 
     // Can parse hex or unsigned integer numbers, return true if succesful,
     // if false will not modify the result
