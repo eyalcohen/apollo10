@@ -19,13 +19,13 @@
 #include "cli.hpp"
 #include "parameters.hpp"
 
-/* Globals */
+
 SerialPort serialPort;
 static RTOS rtos;
 static Parameters parameters;
 static CLI cli(&serialPort, &parameters, rtos);
 
-int32_t test1, test2, test3;
+static bool ledOn = false;
 
 void ledTask(void *params) {
 
@@ -43,7 +43,8 @@ void ledTask(void *params) {
   while (1) {
 
     static bool heartBeat = false;
-    //MAP_GPIOPinWrite(GPIO_PORTF_BASE, Red | Blue, heartBeat ? Red | Blue : 0);
+    MAP_GPIOPinWrite(GPIO_PORTF_BASE, Red | Blue,
+                     (heartBeat && ledOn) ? Red | Blue : 0);
     heartBeat = !heartBeat;
     vTaskDelayUntil( &xLastWakeTime, freq );
   }
@@ -99,10 +100,8 @@ int main() {
     parameters.addParameter(#x, desc, &x, Parameters::FlashWritable);
 
   ADD_RO(serialPort.rxCount, "Rx Bytes transmitted");
-  ADD_ROM(test1, "Test1");
   ADD_RO(serialPort.txCount, "Tx Bytes transmitted");
-  ADD_ROM(test2, "Test2");
-  ADD_ROM(test3, "Test3");
+  ADD_ROM(ledOn, "Turns on board LEDs");
 
 
   vTaskStartScheduler();

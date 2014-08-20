@@ -56,7 +56,7 @@ class CLI {
     // Can parse hex or unsigned integer numbers, return true if succesful,
     // if false will not modify the result
     bool parseInt(const char* const input, uint32_t* result,
-                  bool* isSigned = NULL);
+                  bool* isNegative = NULL);
 
     char buf[64];
     uint8_t next;

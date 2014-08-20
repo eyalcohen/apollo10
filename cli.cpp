@@ -165,7 +165,7 @@ bool CLI::setParameter() {
   const char* valueString = strtok(NULL, " ,\n,\r");
   if (!valueString)
     return false;
-  bool isSigned;
+  bool isNegative;
 
   uint32_t param, val;
 
@@ -174,14 +174,14 @@ bool CLI::setParameter() {
     paramIsNum = false;
   }
 
-  if (!parseInt(valueString, &val, &isSigned)) {
+  if (!parseInt(valueString, &val, &isNegative)) {
     p->printf("\"%s\" is not a command\n", valueString);
     return false;
   }
 
   char err[32];
   if (paramIsNum) {
-    if (!parameters->set(param, isSigned ? (int32_t)val: (uint32_t)val, err)) {
+    if (!parameters->set(param, isNegative ? -((int32_t)val): (uint32_t)val, err)) {
       p->printf("Error %s\n", err);
       return false;
     }
@@ -192,7 +192,7 @@ bool CLI::setParameter() {
     printParam(&paramGet);
 
   } else {
-    if (!parameters->set(paramString, isSigned ? (int32_t)val: (uint32_t)val, err)) {
+    if (!parameters->set(paramString, isNegative ? (int32_t)val: (uint32_t)val, err)) {
       p->printf("Error %s\n", err);
       return false;
     }
@@ -302,7 +302,7 @@ void CLI::putPrompt() {
   p->put(' ');
 }
 bool CLI::parseInt(const char* const input, uint32_t* result,
-                   bool* isSigned) {
+                   bool* isNegative) {
 
   uint32_t num = 0;
   bool hex = false;
@@ -313,8 +313,8 @@ bool CLI::parseInt(const char* const input, uint32_t* result,
     iterator += 2;
   } else if (*iterator == '-') {
     iterator++;
-    if (!isSigned)
-      *isSigned = true;
+    if (!isNegative)
+      *isNegative = true;
   }
 
   for(; *iterator; iterator++) {

@@ -26,6 +26,7 @@ Parameters::ParameterGet Parameters::ResultsIterator::val() {
   }
   uint32_t data;
   switch (params->table[next].type) {
+    case Bool:   data = *(bool*)    params->table[next].data; break;
     case Uint8:  data = *(uint8_t*) params->table[next].data; break;
     case Uint16: data = *(uint16_t*)params->table[next].data; break;
     case Uint32: data = *(uint32_t*)params->table[next].data; break;
@@ -79,7 +80,7 @@ void Parameters::addParameter(const char* name,
 #define S(T) \
   template void Parameters::addParameter<T> \
     (const char*, const char*, T*, Qualifier)
-S(int8_t); S(int16_t); S(int32_t);
+S(bool); S(int8_t); S(int16_t); S(int32_t);
 S(uint8_t); S(uint16_t); S(uint32_t); S(float);
 #undef S
 
@@ -94,13 +95,14 @@ bool Parameters::get(ParameterIndex index, ParameterGet* get) {
 
   uint32_t data;
   switch (table[index].type) {
+    case Bool:   data = *(bool*) table[index].data; break;
     case Uint8:  data = *(uint8_t*) table[index].data; break;
     case Uint16: data = *(uint16_t*)table[index].data; break;
-    default:
     case Uint32: data = *(uint32_t*)table[index].data; break;
     case Int8:   data = *(int8_t*)  table[index].data; break;
     case Int16:  data = *(int16_t*) table[index].data; break;
     case Int32:  data = *(int32_t*) table[index].data; break;
+    case Float:  data = *(float*) table[index].data; break;
   }
 
   get->index = index;
@@ -124,6 +126,7 @@ bool Parameters::set(ParameterIndex index, T val, char err[ERR_BYTES]) {
   }
 
   switch (table[index].type) {
+    case Bool:   *(bool*)     table[index].data = val; break;
     case Int8:   *(int8_t*)   table[index].data = val; break;
     case Int16:  *(int16_t*)  table[index].data = val; break;
     case Int32:  *(int32_t*)  table[index].data = val; break;
@@ -157,6 +160,7 @@ bool Parameters::set(const char* name, T val, char err[ERR_BYTES]) {
   }
 
   switch (table[index].type) {
+    case Bool:   *(bool*)     table[index].data = val; break;
     case Int8:   *(int8_t*)   table[index].data = val; break;
     case Int16:  *(int16_t*)  table[index].data = val; break;
     case Int32:  *(int32_t*)  table[index].data = val; break;
@@ -173,7 +177,7 @@ bool Parameters::set(const char* name, T val, char err[ERR_BYTES]) {
 #define S(T) \
   template bool Parameters::set<T>(ParameterIndex, T, char err[ERR_BYTES]); \
   template bool Parameters::set<T>(const char*, T, char err[ERR_BYTES])
-S(int8_t); S(int16_t); S(int32_t);
+S(bool); S(int8_t); S(int16_t); S(int32_t);
 S(uint8_t); S(uint16_t); S(uint32_t); S(float);
 #undef S
 

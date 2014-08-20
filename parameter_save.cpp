@@ -151,6 +151,7 @@ bool ParameterSave::load(Parameters* parameters, char err[ERR_BYTES]) {
             && parameters->table[i].type == paramHeader.type) {
           void* data = parameters->table[i].data;
           switch (paramHeader.type) {
+            case Parameters::Bool:   *(bool*) data = paramHeader.value; break;
             case Parameters::Uint8:  *(uint8_t*) data = paramHeader.value; break;
             case Parameters::Uint16: *(uint16_t*)data = paramHeader.value; break;
             case Parameters::Uint32: *(uint32_t*)data = paramHeader.value; break;

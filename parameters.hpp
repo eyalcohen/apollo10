@@ -27,7 +27,7 @@ class Parameters {
 
     // Supported types
     enum Type {
-      Int8, Int16, Int32, Uint8, Uint16, Uint32, Float
+      Bool, Int8, Int16, Int32, Uint8, Uint16, Uint32, Float
     };
 
     // typedeffed if we ever need more than 256 indexes
@@ -90,7 +90,8 @@ class Parameters {
     // information to addParameter, akin to templating, with compile time
     // information only
     #define S(T1, T2) void setType(ParameterIndex idx, T1 t) { table[idx].type = T2; } \
-     
+
+    S(bool, Bool)
     S(uint32_t, Uint32)
     S(uint16_t, Uint16)
     S(uint8_t, Uint8)
