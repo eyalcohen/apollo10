@@ -22,8 +22,8 @@ class ParameterSave {
 
     // All functions returns false if failed
     static bool init(char err[ERR_BYTES]);
-    static bool save(const Parameters* parameters, char err[ERR_BYTES]); 
-    static bool load(Parameters* parameters, char err[ERR_BYTES]); 
+    static bool save(const Parameters* parameters, char err[ERR_BYTES]);
+    static bool load(Parameters* parameters, char err[ERR_BYTES]);
     static bool erase(char err[ERR_BYTES]);
 
   private:
@@ -44,7 +44,7 @@ class ParameterSave {
 
     // round a number to the nearest 4th
     static uint32_t align32(uint32_t v) {
-      uint32_t r = v % 4;  
+      uint32_t r = v % 4;
       return r ? v + (4 - r) : v;
     }
 };
