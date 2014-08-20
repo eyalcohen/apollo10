@@ -28,11 +28,11 @@ Parameters::ParameterGet Parameters::ResultsIterator::val() {
   switch (params->table[next].type) {
     case Uint8:  data = *(uint8_t*) params->table[next].data; break;
     case Uint16: data = *(uint16_t*)params->table[next].data; break;
-    default:
     case Uint32: data = *(uint32_t*)params->table[next].data; break;
     case Int8:   data = *(int8_t*)  params->table[next].data; break;
     case Int16:  data = *(int16_t*) params->table[next].data; break;
     case Int32:  data = *(int32_t*) params->table[next].data; break;
+    case Float:  data = *(float*)   params->table[next].data; break;
   }
 
   ParameterGet p = { next,

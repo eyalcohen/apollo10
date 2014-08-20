@@ -141,11 +141,29 @@ bool ParameterSave::load(Parameters* parameters, char err[ERR_BYTES]) {
     EEPROMRead((uint32_t*)&paramHeader, address, paramHeaderSize);
     address += paramHeaderSize;
     char name[64];
-    EEPROMRead((uint32_t*)name, address, paramHeader.nameLen);
+    EEPROMRead((uint32_t*)name, address, MIN(paramHeader.nameLen, sizeof(name)));
     address += paramHeader.nameLen;
 
     // Now copy to parameters
-    //for (uint32_t i = 0; i < parameters->
+    for (uint32_t i = 0; i < parameters->length; i++) {
+      if (strncmp(parameters->table[i].name, name, sizeof(name)) == 0) {
+        if (parameters->table[i].qualifier == Parameters::FlashWritable
+            && parameters->table[i].type == paramHeader.type) {
+          void* data = parameters->table[i].data;
+          switch (paramHeader.type) {
+            case Parameters::Uint8:  *(uint8_t*) data = paramHeader.value; break;
+            case Parameters::Uint16: *(uint16_t*)data = paramHeader.value; break;
+            case Parameters::Uint32: *(uint32_t*)data = paramHeader.value; break;
+            case Parameters::Int8:   *(int8_t*)  data = paramHeader.value; break;
+            case Parameters::Int16:  *(int16_t*) data = paramHeader.value; break;
+            case Parameters::Int32:  *(int32_t*) data = paramHeader.value; break;
+            case Parameters::Float:  *(float*)   data = paramHeader.value; break;
+          }
+          break;
+        }
+      }
+    }
+
   }
 
   return true;
