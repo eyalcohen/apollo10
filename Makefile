@@ -47,6 +47,7 @@ VPATH+=./libs/FreeRTOS/Source/portable/MemMang/
 VPATH+=./libs/FreeRTOS/Source
 VPATH+=./libs/drivers
 VPATH+=./libs/utils
+VPATH+=./src
 
 #
 # Where to find header files that do not live in the source directory.
@@ -58,6 +59,7 @@ IPATH+=/usr/lib/gcc/arm-none-eabi/4.8.2/include
 IPATH+=./libs/FreeRTOS/Source/portable/GCC/ARM_CM4F
 IPATH+=./libs/FreeRTOS
 IPATH+=./libs/FreeRTOS/Source/include
+IPATH+=./src
 
 #
 # The default rule, which causes the FreeRTOS example to be built.
