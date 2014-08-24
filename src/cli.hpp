@@ -36,7 +36,7 @@ class CLI {
     bool getParameter();
     bool setParameter();
     bool reset();
-    bool resources();
+    bool stats();
     
     // parameter management
     bool save();

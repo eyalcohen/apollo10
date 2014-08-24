@@ -9,6 +9,7 @@
 #include "serialport.hpp"
 #include "rtos.hpp"
 #include "parameter_save.hpp"
+#include "timer.hpp"
 
 // Command table for CLI
 static CLI::Command commandTable[] = {
@@ -21,7 +22,7 @@ static CLI::Command commandTable[] = {
   {"set", "Sets a parameter.  Usage: set paramNumber|paramName string",
     &CLI::setParameter},
   {"reset", "Reset the system", &CLI::reset},
-  {"resources", "OS and run-time information", &CLI::resources},
+  {"stats", "OS and run-time information", &CLI::stats},
   {"save", "Save parameters to EEPROM", &CLI::save},
   {"load", "Load parameters from EEPROM", &CLI::load},
   {"erase", "Erase parameters from EEPROM", &CLI::erase},
@@ -219,11 +220,12 @@ bool CLI::reset() {
   return false;
 }
 
-bool CLI::resources() {
+bool CLI::stats() {
 
   RTOS::TaskStats stats[RTOS::MaxTasks];
   rtos.getTaskStats(stats, rtos.count());
 
+  p->printf("OS Tasks:\n");
   p->printf("%12s\t%12s\t%8s\t%12s\n", "Name", "State", "Stack", "Stack used");
   for (uint32_t i = 0; i < rtos.count(); i++) {
     char state[8];
@@ -234,8 +236,12 @@ bool CLI::resources() {
       case RTOS::Suspended: strcpy(state, "Suspend"); break;
       case RTOS::Deleted:   strcpy(state, "Deleted"); break;
     }
-    p->printf("%12s\t%12s\t%8d\t%12d\n", stats[i].name, state, stats[i].stack, stats[i].stackUsed);
+    p->printf("%12s\t%12s\t%8d\t%12d\n", stats[i].name, state, stats[i].stack,
+                                       stats[i].stackUsed);
   }
+  p->printf("Clock frequency at %dMHz\n", MAP_SysCtlClockGet()/1000000);
+  p->printf("Uptime of %d seconds\n",
+    (uint32_t)Timer::getTicks64(Timer::Timer0)/MAP_SysCtlClockGet());
   return true;
 }
 

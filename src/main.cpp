@@ -18,6 +18,7 @@
 #include "serialport.hpp"
 #include "cli.hpp"
 #include "parameters.hpp"
+#include "timer.hpp"
 
 
 SerialPort serialPort;
@@ -82,14 +83,15 @@ int main() {
   MAP_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ |
                      SYSCTL_OSC_MAIN);
 
-  rtos.createTask(uartTask, "UartTX", UARTStack, UARTPriority);
+  Timer::initTimer(Timer::Timer0);
 
   serialPort.initialize(115200);
   serialPort.putLine();
   serialPort.putLine("Welcome to the Apollo10 controller");
 
-  rtos.createTask(cliTask, "CLI", CLIStack, CLIPriority);
 
+  rtos.createTask(uartTask, "UartTX", UARTStack, UARTPriority);
+  rtos.createTask(cliTask, "CLI", CLIStack, CLIPriority);
   rtos.createTask(ledTask, "LED", 100, 1);
 
   #define ADD_RO(x, desc) \
