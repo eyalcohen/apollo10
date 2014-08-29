@@ -8,15 +8,16 @@
 
 #include <stdbool.h>
 
-Printer::Printer() : percent(false), hexLeader(false), pad(0), zeros(false) {}
+Printer::Printer() : percent(false), hexLeader(false), pad(0), zeros(false),
+                     precision(-1) {}
 
 void Printer::printDecimal(uint32_t val, bool isSigned) const {
-  char out[16] = {'\0'};
+  char out[32];
   char* buf = out;
   int32_t asSigned = (int32_t)val;
 
   // val is the actual value we print, so invert asSigned and throw in a
-  // negative sign
+  // neg sign
   bool neg = isSigned && asSigned < 0;
   if (neg) {
     val = -asSigned;
@@ -29,26 +30,31 @@ void Printer::printDecimal(uint32_t val, bool isSigned) const {
     val /= 10;
   } while (val && (buf - out) != sizeof(out));
 
-  // Pad if necessary, adding a negative sign either before or after the padding
+  // Pad if necessary, adding a neg sign either before or after the padding
   // depenidng on whether 0's are requested
+
+  int16_t add = pad - (neg ? 1 : 0) - (buf - out);
 
   if (neg && !zeros)
     *buf++ = '-';
-  for (int add = pad - (buf - out) - (neg ? 1 : 0); add > 0; add--) {
+
+  // determinehow much padding to add
+  // remove 1 for the negative sign, and 1 for each character we intend to print
+  for (; add > 0; add--) {
     *buf++ = zeros ? '0' : ' ';
   }
   if (neg && zeros)
     *buf++ = '-';
 
   // now reverse and print
-  for (;buf != out;buf--) {
+  for (buf--;buf > out;buf--) {
     put(*buf);
   }
   put(*buf);
 }
 
 void Printer::printHex(uint32_t val, bool upperCase, bool leader) const {
-  char out[16] = {'\0'};
+  char out[32];
   char* buf = out;
 
   // Put hex leader 0x or 0X if requested
@@ -71,7 +77,7 @@ void Printer::printHex(uint32_t val, bool upperCase, bool leader) const {
   }
 
   // now reverse and print
-  for (;buf != out;buf--) {
+  for (buf--;buf > out;buf--) {
     put(*buf);
   }
   put(*buf);
@@ -93,6 +99,74 @@ void Printer::printString(const char* str) const {
   }
 }
 
+void Printer::printFloat(double asDouble) const {
+
+  float val = asDouble;
+  int16_t exponent = 0;
+  uint16_t precision_ = precision == -1 ? DefaultPrecision : precision;
+
+
+  bool neg = val < 0;
+  if (neg) val = -val;
+  while (val >= 10) {
+    exponent++;
+    val /= 10;
+  }
+  while (val < 1) {
+    exponent--;
+    val *= 10;
+  }
+
+  if (neg && zeros) {
+    put('-');
+  }
+
+  // determinehow much padding to add
+  // 1 for negative sign, 1 for decimal, precision, exponent, and 1 for leading
+  // number
+  int16_t add = pad - (neg ? 1 : 0) - (precision_ ? 1 : 0) - precision_ -
+                (exponent > 0 ? exponent : 0) - 1;
+
+  // add padding
+  while (add > 0) {
+    put(zeros ? '0' : ' ');
+    add--;
+  }
+
+  if (neg && !zeros) {
+    put('-');
+  }
+
+  // leading 0
+  if (exponent < 0) {
+    put('0');
+  }
+
+  // Prepare for output buffer
+  for (; exponent >= 0; exponent--) {
+    // Use a cast to truncate;
+    uint32_t digit = val;
+    put(digit + '0');
+    val = (val - digit) * 10;
+  }
+
+  if (precision_ > 0) {
+    put('.');
+  }
+
+  for (; precision_ > 0; precision_--) {
+    if (exponent < -1) {
+      put('0');
+      exponent++;
+    } else {
+      uint32_t digit = val;
+      put(digit + '0');
+      val = (val - digit) * 10;
+    }
+  }
+
+}
+
 void Printer::printf(const char* fmt, ...) {
   va_list args;
   va_start (args, fmt);
@@ -103,18 +177,28 @@ void Printer::printf(const char* fmt, ...) {
       hexLeader = false;
       pad = 0;
       zeros = false;
+      precision = -1;
     } else if (percent) {
 
       // handle padding
       if (*fmt >= '0' && *fmt <= '9') {
-        if (*fmt == '0' && pad == 0)
-          zeros = true;
+        if (precision >= 0) {
+          precision = (precision * 10) + (*fmt - '0');
+        }
         else {
-          pad = (pad * 10) + (*fmt - '0');
+          if (*fmt == '0' && pad == 0)
+            zeros = true;
+          else {
+            pad = (pad * 10) + (*fmt - '0');
+          }
         }
       }
 
       switch (*fmt) {
+        case 'f':
+          printFloat(va_arg(args, double));
+          percent = false;
+          break;
         case 'd':
         case 'i':
         case 'u':
@@ -136,6 +220,9 @@ void Printer::printf(const char* fmt, ...) {
           break;
         case '#':
           hexLeader = true;
+          break;
+        case '.':
+          precision = 0;
           break;
       }
     } else {

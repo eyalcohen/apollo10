@@ -30,13 +30,16 @@ class Printer {
     void printDecimal(uint32_t val, bool isSigned) const;
     void printHex(uint32_t val, bool upperCase, bool leader) const;
     void printString(const char* str) const;
+    void printFloat(double asDouble) const;
 
     // Flags and state for printf
     bool percent; // % symbol
     bool hexLeader; // # symbol, like %#0X
-    int pad; // Pad modifier, like %8X
+    int8_t pad; // Pad modifier, like %8X
     bool zeros; // Add zeros to padding
+    int8_t precision; // Precision flag
 
+    enum {DefaultPrecision = 6};
 };
 
 #endif
