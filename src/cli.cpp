@@ -153,7 +153,7 @@ bool CLI::getParameter() {
   return true;
 }
 
-void CLI::printParam(const Parameters::ParameterGet* param) {
+void CLI::printParam(const Parameters::ParameterGet* param) const {
   p->printf("[%02d] %s = ", param->index, param->name, param->description);
   if (param->type == Parameters::Int8) {
     p->printf("%d", *(int8_t*)&param->valueUntyped);
@@ -186,14 +186,26 @@ bool CLI::setParameter() {
     paramIsNum = false;
   }
 
-  if (!parseInt(valueString, &val, &isNegative)) {
-    p->printf("\"%s\" is not a command\n", valueString);
+  float valAsFloat;
+  bool valIsFloat = false;
+  if (parseFloat(valueString, &valAsFloat)) {
+    valIsFloat = true;
+  }
+  else if (!parseInt(valueString, &val, &isNegative)) {
+    p->printf("\"%s\" is not a value\n", valueString);
     return false;
   }
 
   char err[32];
+  bool success = false;
   if (paramIsNum) {
-    if (!parameters->set(param, isNegative ? -((int32_t)val): (uint32_t)val, err)) {
+
+    if (valIsFloat) {
+      success = parameters->set(param, valAsFloat, err);
+    } else {
+      success = parameters->set(param, isNegative ? -((int32_t)val): (uint32_t)val, err);
+    }
+    if (!success) {
       p->printf("Error %s\n", err);
       return false;
     }
@@ -204,7 +216,13 @@ bool CLI::setParameter() {
     printParam(&paramGet);
 
   } else {
-    if (!parameters->set(paramString, isNegative ? (int32_t)val: (uint32_t)val, err)) {
+
+    if (valIsFloat) {
+      success = parameters->set(param, valAsFloat, err);
+    } else {
+      success = parameters->set(param, isNegative ? -((int32_t)val): (uint32_t)val, err);
+    }
+    if (!success) {
       p->printf("Error %s\n", err);
       return false;
     }
@@ -314,34 +332,87 @@ void CLI::execute() {
   putPrompt();
 }
 
-void CLI::putPrompt() {
+void CLI::putPrompt() const {
   p->put('>');
   p->put(' ');
 }
-bool CLI::parseInt(const char* const input, uint32_t* result,
-                   bool* isNegative) {
+
+bool CLI::parseFloat(const char* input, float* result) const {
+  uint32_t num = 0;
+  const char* it = input;
+  bool neg = false;
+
+  if (*it == '-') {
+    neg = true;
+    it++;
+  }
+
+  for(; *it && *it != '.'; it++) {
+    num *= 10;
+    if (*it >= '0' && *it <= '9') {
+      num += *it - '0';
+    } else {
+      return false;
+    }
+  }
+
+  uint32_t frac = 0;
+  uint16_t exp = 0;
+
+  if (*it++ != '.') {
+    return false;
+  }
+
+  for(; *it && *it != '.'; it++) {
+    frac *= 10;
+    if (*it >= '0' && *it <= '9') {
+      frac += *it - '0';
+      exp++;
+    } else {
+      return false;
+    }
+  }
+
+  // having a number like 3. isn't valid
+  if (exp < 1)
+    return false;
+
+  float divideBy = 1.0;
+  while (exp--) {
+    divideBy = divideBy*10.0;
+  }
+
+  float res = num + frac/divideBy;
+  if (neg) res = -res;
+  *result = res;
+  return true;
+
+}
+
+bool CLI::parseInt(const char* input, uint32_t* result,
+                   bool* isNegative) const {
 
   uint32_t num = 0;
   bool hex = false;
-  const char* iterator = input;
+  const char* it = input;
 
-  if (*iterator == '0' && (*(iterator+1) == 'x' || *(iterator+1) == 'X')) {
+  if (*it == '0' && (*(it+1) == 'x' || *(it+1) == 'X')) {
     hex = true;
-    iterator += 2;
-  } else if (*iterator == '-') {
-    iterator++;
+    it += 2;
+  } else if (*it == '-') {
+    it++;
     if (!isNegative)
       *isNegative = true;
   }
 
-  for(; *iterator; iterator++) {
+  for(; *it; it++) {
     num *= hex ? 16 : 10;
-    if (hex && *iterator >= 'a' && *iterator <= 'f') {
-      num += (*iterator - 'a' + 10);
-    } else if (hex && *iterator >= 'A' && *iterator <= 'F') {
-      num += (*iterator - 'A' + 10);
-    } else if (*iterator >= '0' && *iterator <= '9'){
-      num += *iterator - '0';
+    if (hex && *it >= 'a' && *it <= 'f') {
+      num += (*it - 'a' + 10);
+    } else if (hex && *it >= 'A' && *it <= 'F') {
+      num += (*it - 'A' + 10);
+    } else if (*it >= '0' && *it <= '9'){
+      num += *it - '0';
     } else {
       return false;
     }

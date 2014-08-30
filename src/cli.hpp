@@ -49,14 +49,18 @@ class CLI {
   private:
 
     void execute();
-    void putPrompt();
+    void putPrompt() const;
 
-    void printParam(const Parameters::ParameterGet* param);
+    void printParam(const Parameters::ParameterGet* param) const;
+
+    // Parse a float number (supports x.x only)
+    bool parseFloat(const char* input, float* result) const;
 
     // Can parse hex or unsigned integer numbers, return true if succesful,
-    // if false will not modify the result
-    bool parseInt(const char* const input, uint32_t* result,
-                  bool* isNegative = NULL);
+    // if false will not modify the result.  Will parse until a terminating
+    // character is found
+    bool parseInt(const char* input, uint32_t* result,
+                  bool* isNegative = NULL) const;
 
     char buf[64];
     uint8_t next;
