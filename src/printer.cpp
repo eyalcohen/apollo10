@@ -7,6 +7,7 @@
 #include "printer.hpp"
 
 #include <stdbool.h>
+#include <float.h>
 
 Printer::Printer() : percent(false), hexLeader(false), pad(0), zeros(false),
                      precision(-1) {}
@@ -108,11 +109,25 @@ void Printer::printFloat(double asDouble) const {
 
   bool neg = val < 0;
   if (neg) val = -val;
+
+  if (val > DBL_MAX) {
+    if (neg) {
+      put('-');
+    }
+    for (int16_t add = pad - 3 - (neg ? 1 : 0); add > 0; add--) {
+      put(' ');
+    }
+    put('i');
+    put('n');
+    put('f');
+    return;
+  }
+
   while (val >= 10) {
     exponent++;
     val /= 10;
   }
-  while (val < 1) {
+  while (val < 1 && val !=0) {
     exponent--;
     val *= 10;
   }

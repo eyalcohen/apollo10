@@ -120,17 +120,24 @@ bool CLI::memoryDisplayWords() {
   return true;
 }
 
+// get [num|name]
+// If num, we try parsing the number as an int than calling the appropriate
+// parameter function.  If name, we expect an iterator with all the possible
+// results
 bool CLI::getParameter() {
   const char* nextArg = strtok(NULL, " ,\n,\r");
   Parameters::ResultsIterator it;
   Parameters::ParameterGet param;
   uint32_t paramNumber = (uint32_t)-1;
 
-  // First try getting the param number
-  if (parseInt(nextArg, &paramNumber))
-    parameters->get(paramNumber, &param);
-  else if (nextArg) {
+  // First try parsing as if the first argument was number
+  if (nextArg && parseInt(nextArg, &paramNumber)) {
+    if (!parameters->get(paramNumber, &param))
+      return false;
+  // Otherwise, try parsing as if it were a string
+  } else if (nextArg) {
     parameters->get(nextArg, &it);
+  // If no argument is provided, get the whole paramete rlist
   } else {
     parameters->get("", &it);
   }
@@ -148,12 +155,16 @@ bool CLI::getParameter() {
 
 void CLI::printParam(const Parameters::ParameterGet* param) {
   p->printf("[%02d] %s = ", param->index, param->name, param->description);
-  if (param->type == Parameters::Int8
-      || param->type == Parameters::Int16
-      || param->type == Parameters::Int32 ) {
-    p->printf("%d", (int32_t)param->valueUntyped);
+  if (param->type == Parameters::Int8) {
+    p->printf("%d", *(int8_t*)&param->valueUntyped);
+  } else if (param->type == Parameters::Int16) {
+    p->printf("%d", *(int16_t*)&param->valueUntyped);
+  } else if (param->type == Parameters::Int32) {
+    p->printf("%d", *(int32_t*)&param->valueUntyped);
+  } else if (param->type == Parameters::Float) {
+    p->printf("%f", *(float*)&param->valueUntyped);
   } else {
-    p->printf("%u", (uint32_t)param->valueUntyped);
+    p->printf("%u", param->valueUntyped);
   }
   p->printf("\n");
 }

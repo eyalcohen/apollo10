@@ -30,10 +30,10 @@ Parameters::ParameterGet Parameters::ResultsIterator::val() {
     case Uint8:  data = *(uint8_t*) params->table[next].data; break;
     case Uint16: data = *(uint16_t*)params->table[next].data; break;
     case Uint32: data = *(uint32_t*)params->table[next].data; break;
-    case Int8:   data = *(int8_t*)  params->table[next].data; break;
-    case Int16:  data = *(int16_t*) params->table[next].data; break;
-    case Int32:  data = *(int32_t*) params->table[next].data; break;
-    case Float:  data = *(float*)   params->table[next].data; break;
+    case Int8:   data = *(uint8_t*)  params->table[next].data; break;
+    case Int16:  data = *(uint16_t*) params->table[next].data; break;
+    case Int32:  data = *(uint32_t*) params->table[next].data; break;
+    case Float:  data = *(uint32_t*)   params->table[next].data; break;
   }
 
   ParameterGet p = { next,
@@ -53,6 +53,7 @@ void Parameters::ResultsIterator::seek() {
   if (!params || !str)
     return;
 
+  // Traverse table looking for next string match
   for (;next < params->length; next++) {
     const char* result = strstr(params->table[next].name, str);
     if (result == params->table[next].name || !strlen(str)) {
@@ -91,7 +92,7 @@ void Parameters::get(const char* name, ResultsIterator* iter) {
 bool Parameters::get(ParameterIndex index, ParameterGet* get) {
 
   if (!get) return false;
-  if (index > MaxParams) return false;
+  if (index >= length) return false;
 
   uint32_t data;
   switch (table[index].type) {
@@ -99,10 +100,10 @@ bool Parameters::get(ParameterIndex index, ParameterGet* get) {
     case Uint8:  data = *(uint8_t*) table[index].data; break;
     case Uint16: data = *(uint16_t*)table[index].data; break;
     case Uint32: data = *(uint32_t*)table[index].data; break;
-    case Int8:   data = *(int8_t*)  table[index].data; break;
-    case Int16:  data = *(int16_t*) table[index].data; break;
-    case Int32:  data = *(int32_t*) table[index].data; break;
-    case Float:  data = *(float*) table[index].data; break;
+    case Int8:   data = *(uint8_t*)  table[index].data; break;
+    case Int16:  data = *(uint16_t*) table[index].data; break;
+    case Int32:  data = *(uint32_t*) table[index].data; break;
+    case Float:  data = *(uint32_t*) table[index].data; break;
   }
 
   get->index = index;

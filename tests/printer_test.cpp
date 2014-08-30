@@ -1,5 +1,6 @@
 #include "printer.hpp"
 #include <stdio.h>
+#include <float.h>
 
 class PrinterTest : public Printer{
   virtual bool put(char c, uint32_t timeout_ms = 0) const {
@@ -28,6 +29,7 @@ int main() {
   PRINTF("%d %3d %04d %04d", -50, -50, -50, 50);
   PRINTF("%s %s %s %s", "Eyal", "Cohen", "Says", "Hello");
   PRINTF("%f %f %f %f", 6234.567689, -1234.56789, .01234, -.01234);
+  PRINTF("%f %f %f %f", 0.0, DBL_MAX+1, -DBL_MAX-1, 0.0);
   PRINTF("%f %f %f %f", 125.0, -125.0, .125, .125);
   PRINTF("%.8f %.8f %.8f %.8f", 1234.567689, -1234.56789, .01234, -.01234);
   PRINTF("%.4f %.4f %.4f %.4f", 1.234567689, -1.23456789, .1234, -.1234);
